@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny Fallback
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'saianandam05@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Institutional User Profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Academic Marksheets & Gradebook
+    match /grades/{gradeId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Fee Ledger & Transactions
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Official Announcements & Broadcasts
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Security & Operations Audit Logs
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Academic Almanac & Calendar Events
+    match /calendar_events/{eventId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Community Forum & Hostel Groups
+    match /chat_groups/{groupId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Community Forum Chat Messages
+    match /chat_messages/{messageId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Digital Syllabus Lectures
+    match /lectures/{lectureId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Assessments & Homework Modules
+    match /assessments/{assessmentId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Private Vault Credentials
+    match /vault_credentials/{credId} {
+      allow read, write: if true;
+    }
+
+    // Private Vault PDF Documents
+    match /vault_documents/{docId} {
+      allow read, write: if true;
+    }
+
+    // System Config & Welcome Banner
+    match /system_config/{configId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Test Connection Verification Document
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

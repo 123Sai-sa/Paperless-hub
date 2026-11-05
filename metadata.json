@@ -1,0 +1,6 @@
+{
+  "name": "Sri Sathya Sai Hostel and School Management System",
+  "description": "Comprehensive paperless management platform for Sri Sathya Sai Hostel and School: digital circulars, verified marksheet gradebooks, hostel records, digital lectures, assessments, and secure personal vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

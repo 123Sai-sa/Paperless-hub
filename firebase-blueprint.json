@@ -1,0 +1,280 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Institutional user profile for Sri Sathya Sai Hostel and School Management System",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "maxLength": 64 },
+        "fullName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student", "parent", "accountant"] },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "classSec": { "type": "string", "maxLength": 32 },
+        "rollNo": { "type": "string", "maxLength": 32 },
+        "apaarId": { "type": "string", "maxLength": 32 },
+        "penId": { "type": "string", "maxLength": 32 },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "twoFactorEnabled": { "type": "boolean" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "password": { "type": "string", "maxLength": 128 },
+        "themePreference": { "type": "string", "enum": ["dark", "light"] }
+      },
+      "required": ["id", "username", "fullName", "role", "email", "status"]
+    },
+    "StudentGrade": {
+      "title": "StudentGrade",
+      "description": "Academic examination score and report card record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "rollNo": { "type": "string", "maxLength": 32 },
+        "classSec": { "type": "string", "maxLength": 32 },
+        "examTermId": { "type": "string", "maxLength": 64 },
+        "totalMarks": { "type": "number" },
+        "maxPossible": { "type": "number" },
+        "percentage": { "type": "number" },
+        "gpa": { "type": "number" },
+        "grade": { "type": "string", "maxLength": 8 },
+        "status": { "type": "string", "enum": ["pass", "fail"] },
+        "remarks": { "type": "string", "maxLength": 500 },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "studentName", "totalMarks", "maxPossible", "percentage", "status"]
+    },
+    "FeeTransaction": {
+      "title": "FeeTransaction",
+      "description": "Verified fee ledger and receipt record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "receiptNo": { "type": "string", "maxLength": 64 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "classSec": { "type": "string", "maxLength": 32 },
+        "rollNo": { "type": "string", "maxLength": 32 },
+        "feeCategory": { "type": "string", "maxLength": 64 },
+        "amount": { "type": "number" },
+        "term": { "type": "string", "maxLength": 64 },
+        "paymentMode": { "type": "string", "maxLength": 32 },
+        "transactionReference": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["verified", "pending", "flagged"] },
+        "date": { "type": "string", "format": "date-time" },
+        "verificationHash": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "receiptNo", "studentId", "amount", "status", "date"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Official institutional broadcast circular",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "content": { "type": "string", "maxLength": 5000 },
+        "category": { "type": "string", "maxLength": 64 },
+        "priority": { "type": "string", "enum": ["high", "medium", "low"] },
+        "targetAudience": { "type": "string", "maxLength": 64 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 128 },
+        "authorRole": { "type": "string", "maxLength": 32 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isUrgent": { "type": "boolean" },
+        "readCount": { "type": "number" }
+      },
+      "required": ["id", "title", "content", "priority", "timestamp"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security operations and activity log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "actorName": { "type": "string", "maxLength": 128 },
+        "actorRole": { "type": "string", "maxLength": 32 },
+        "eventType": { "type": "string", "maxLength": 64 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "ipAddress": { "type": "string", "maxLength": 64 },
+        "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorId", "eventType", "details", "severity", "timestamp"]
+    },
+    "CalendarEvent": {
+      "title": "CalendarEvent",
+      "description": "School and hostel academic calendar event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "date": { "type": "string", "maxLength": 32 },
+        "endDate": { "type": "string", "maxLength": 32 },
+        "category": { "type": "string", "maxLength": 64 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "targetAudience": { "type": "string", "maxLength": 64 },
+        "isHoliday": { "type": "boolean" }
+      },
+      "required": ["id", "title", "date", "category"]
+    },
+    "ChatGroup": {
+      "title": "ChatGroup",
+      "description": "Hostel and community forum discussion group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "maxLength": 32 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "memberCount": { "type": "number" },
+        "lastMessage": { "type": "string", "maxLength": 200 },
+        "lastActivity": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "type"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Community channel post or message",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "groupId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "senderName": { "type": "string", "maxLength": 128 },
+        "senderRole": { "type": "string", "maxLength": 32 },
+        "text": { "type": "string", "maxLength": 2000 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["id", "groupId", "senderId", "senderName", "text", "timestamp"]
+    },
+    "Lecture": {
+      "title": "Lecture",
+      "description": "Digital video lecture and curriculum module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 64 },
+        "gradeClass": { "type": "string", "maxLength": 32 },
+        "teacherId": { "type": "string", "maxLength": 128 },
+        "teacherName": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "videoUrl": { "type": "string", "maxLength": 500 },
+        "durationMinutes": { "type": "number" },
+        "notesPdfUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "subject", "gradeClass", "teacherName", "createdAt"]
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "description": "Digital homework and test assessment module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 64 },
+        "gradeClass": { "type": "string", "maxLength": 32 },
+        "teacherId": { "type": "string", "maxLength": 128 },
+        "teacherName": { "type": "string", "maxLength": 128 },
+        "maxScore": { "type": "number" },
+        "passScore": { "type": "number" },
+        "dueDate": { "type": "string", "maxLength": 32 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "subject", "gradeClass", "maxScore", "dueDate"]
+    },
+    "VaultCredential": {
+      "title": "VaultCredential",
+      "description": "Secure private locker credential entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "siteName": { "type": "string", "maxLength": 128 },
+        "siteUrl": { "type": "string", "maxLength": 500 },
+        "loginIdentifier": { "type": "string", "maxLength": 128 },
+        "password": { "type": "string", "maxLength": 256 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "category": { "type": "string", "maxLength": 64 },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "siteName", "loginIdentifier", "password"]
+    },
+    "VaultDocument": {
+      "title": "VaultDocument",
+      "description": "Secure private locker PDF/digital document item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "maxLength": 64 },
+        "fileName": { "type": "string", "maxLength": 256 },
+        "fileSize": { "type": "string", "maxLength": 32 },
+        "fileType": { "type": "string", "maxLength": 64 },
+        "fileData": { "type": "string", "maxLength": 2000000 },
+        "uploadDate": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["id", "userId", "title", "fileName", "fileData", "uploadDate"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Registered faculty, student, admin, and parent user profiles"
+    },
+    "/grades/{gradeId}": {
+      "schema": { "$ref": "#/entities/StudentGrade" },
+      "description": "Student academic marksheets and exam terms"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/FeeTransaction" },
+      "description": "Fee payment ledger and digital audit receipts"
+    },
+    "/announcements/{announcementId}": {
+      "schema": { "$ref": "#/entities/Announcement" },
+      "description": "Institutional circulars and notice broadcasts"
+    },
+    "/audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Security audit and user action history log"
+    },
+    "/calendar_events/{eventId}": {
+      "schema": { "$ref": "#/entities/CalendarEvent" },
+      "description": "Academic almanac and hostel schedule events"
+    },
+    "/chat_groups/{groupId}": {
+      "schema": { "$ref": "#/entities/ChatGroup" },
+      "description": "Community forum and hostel discussion channels"
+    },
+    "/chat_messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages posted in community channels"
+    },
+    "/lectures/{lectureId}": {
+      "schema": { "$ref": "#/entities/Lecture" },
+      "description": "Digital syllabus lessons and video classes"
+    },
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/Assessment" },
+      "description": "Digital homework and test assessments"
+    },
+    "/vault_credentials/{credId}": {
+      "schema": { "$ref": "#/entities/VaultCredential" },
+      "description": "User private external site credentials and logins"
+    },
+    "/vault_documents/{docId}": {
+      "schema": { "$ref": "#/entities/VaultDocument" },
+      "description": "User private PDF documents, admit cards, and certificates"
+    }
+  }
+}

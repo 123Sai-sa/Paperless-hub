@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Sri Sathya Sai Management System: Dual Theme Architecture (Dark & Light)
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+}
+
+html.theme-light,
+body.theme-light,
+.theme-light {
+  color-scheme: light;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Page, Containers & Backgrounds */
+.theme-light .bg-slate-950,
+.theme-light.bg-slate-950 {
+  background-color: #f1f5f9 !important;
+}
+
+.theme-light .bg-slate-900,
+.theme-light.bg-slate-900 {
+  background-color: #ffffff !important;
+}
+
+.theme-light .bg-slate-900\/60,
+.theme-light .bg-slate-900\/70,
+.theme-light .bg-slate-900\/80,
+.theme-light .bg-slate-900\/90,
+.theme-light .bg-slate-950\/40,
+.theme-light .bg-slate-950\/60,
+.theme-light .bg-slate-950\/70,
+.theme-light .bg-slate-950\/80,
+.theme-light .bg-slate-950\/85 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.theme-light .bg-slate-800,
+.theme-light.bg-slate-800 {
+  background-color: #e2e8f0 !important;
+}
+
+/* Hover States */
+.theme-light .hover\:bg-slate-900:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.theme-light .hover\:bg-slate-800:hover {
+  background-color: #e2e8f0 !important;
+}
+
+.theme-light .hover\:bg-slate-700:hover {
+  background-color: #cbd5e1 !important;
+}
+
+.theme-light .hover\:bg-slate-700\/80:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* Borders */
+.theme-light .border-slate-800,
+.theme-light .border-slate-800\/60,
+.theme-light .border-slate-800\/70,
+.theme-light .border-slate-800\/80,
+.theme-light .border-slate-800\/90,
+.theme-light .border-slate-900 {
+  border-color: #e2e8f0 !important;
+}
+
+.theme-light .border-slate-700,
+.theme-light .border-slate-700\/60 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Typography Hierarchy */
+.theme-light .text-white {
+  color: #0f172a !important;
+}
+
+.theme-light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+.theme-light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+.theme-light .text-slate-300 {
+  color: #334155 !important;
+}
+
+.theme-light .text-slate-400 {
+  color: #64748b !important;
+}
+
+.theme-light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Form Inputs, Selects & Textareas */
+.theme-light input:not([type="checkbox"]):not([type="radio"]),
+.theme-light select,
+.theme-light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.theme-light input:focus,
+.theme-light select:focus,
+.theme-light textarea:focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Modal Inner Surfaces in Light Mode */
+.theme-light .fixed .bg-slate-900 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.theme-light .fixed .bg-slate-950,
+.theme-light .fixed .bg-slate-950\/80,
+.theme-light .fixed .bg-slate-950\/60 {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Pills & Semantic Badges */
+.theme-light .bg-indigo-950\/60,
+.theme-light .bg-indigo-950\/50,
+.theme-light .bg-indigo-950\/40,
+.theme-light .bg-indigo-950\/30 {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border-color: #c7d2fe !important;
+}
+
+.theme-light .bg-emerald-950\/60,
+.theme-light .bg-emerald-950\/50,
+.theme-light .bg-emerald-950\/40 {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.theme-light .bg-amber-950\/60,
+.theme-light .bg-amber-500\/15,
+.theme-light .bg-amber-500\/20 {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+
+.theme-light .bg-rose-950\/60,
+.theme-light .bg-rose-950\/40 {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #fecdd3 !important;
+}
+
+.theme-light .bg-cyan-950\/60,
+.theme-light .bg-cyan-500\/15 {
+  background-color: #ecfeff !important;
+  color: #0e7490 !important;
+  border-color: #a5f3fc !important;
+}
+
+.theme-light .bg-purple-950\/60,
+.theme-light .bg-purple-500\/15 {
+  background-color: #faf5ff !important;
+  color: #7e22ce !important;
+  border-color: #e9d5ff !important;
+}
+
+/* Crisp Institutional Shadows in Light Mode */
+.theme-light .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+}
+
+.theme-light .shadow-xl {
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -4px rgba(15, 23, 42, 0.03) !important;
+}

@@ -401,11 +401,11 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
       {/* Top Header Card */}
       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.3)] bg-slate-950 p-1 shrink-0 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400/90 shadow-[0_0_15px_rgba(245,158,11,0.3)] bg-white p-1 shrink-0 flex items-center justify-center">
             <img
-              src="/assets/sai_anandam_logo.jpg"
+              src="/assets/sai_anandam_real_logo.png"
               alt="Sri Sathya Sai Anandam School Emblem"
-              className="w-full h-full object-contain rounded-full"
+              className="w-full h-full object-contain"
             />
           </div>
           <div>
@@ -865,11 +865,11 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 text-slate-100 shadow-2xl overflow-y-auto max-h-[92vh]">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-400/80 bg-slate-950 p-0.5">
+                <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-400/80 bg-white p-0.5 flex items-center justify-center">
                   <img
-                    src="/assets/sai_anandam_logo.jpg"
+                    src="/assets/sai_anandam_real_logo.png"
                     alt="Logo"
-                    className="w-full h-full object-contain rounded-full"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div>
@@ -1137,9 +1137,9 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
             <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <img
-                  src="/assets/sai_anandam_logo.jpg"
+                  src="/assets/sai_anandam_real_logo.png"
                   alt="Sri Sathya Sai Anandam School"
-                  className="w-16 h-16 rounded-full border-2 border-amber-600 shadow-md object-contain"
+                  className="w-16 h-16 rounded-xl border-2 border-amber-600 shadow-md object-contain bg-white p-1"
                 />
                 <div className="text-left">
                   <div className="text-xs font-bold tracking-widest uppercase text-amber-700">
@@ -1268,9 +1268,9 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
             <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <img
-                  src="/assets/sai_anandam_logo.jpg"
-                  alt="Logo"
-                  className="w-16 h-16 rounded-full border border-amber-500 object-contain"
+                  src="/assets/sai_anandam_real_logo.png"
+                  alt="Sri Sathya Sai Anandam School Logo"
+                  className="w-16 h-16 rounded-xl border border-amber-500 object-contain bg-white p-1"
                 />
                 <div>
                   <div className="text-xs font-bold tracking-widest uppercase text-amber-700">

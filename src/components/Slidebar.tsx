@@ -22,6 +22,7 @@ import {
   Lock,
   Sun,
   Moon,
+  Database,
 } from 'lucide-react';
 import { NavigationTab, User } from '../types';
 
@@ -42,6 +43,7 @@ interface SlidebarProps {
   assignmentCount?: number;
   theme?: 'dark' | 'light';
   onToggleTheme?: () => void;
+  onOpenDatabaseModal?: () => void;
 }
 
 interface NavItem {
@@ -75,6 +77,7 @@ export const Slidebar: React.FC<SlidebarProps> = ({
   assignmentCount = 4,
   theme = 'dark',
   onToggleTheme,
+  onOpenDatabaseModal,
 }) => {
   const handleClose = onClose || onCloseMobile || (() => {});
   const handleSelectTab = onSelectTab || onTabChange || (() => {});
@@ -187,11 +190,11 @@ export const Slidebar: React.FC<SlidebarProps> = ({
         {/* Slidebar Header / Brand */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-400/80 shadow-[0_0_12px_rgba(245,158,11,0.25)] bg-slate-900 p-0.5 shrink-0 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-400/90 shadow-[0_0_12px_rgba(245,158,11,0.25)] bg-white p-0.5 shrink-0 flex items-center justify-center">
               <img
-                src="/assets/sai_anandam_logo.jpg"
+                src="/assets/sai_anandam_real_logo.png"
                 alt="Sri Sathya Sai Anandam School Logo"
-                className="w-full h-full object-contain rounded-full"
+                className="w-full h-full object-contain"
               />
             </div>
 
@@ -303,9 +306,33 @@ export const Slidebar: React.FC<SlidebarProps> = ({
             </div>
           ))}
 
+          {/* Cloud Firestore Database Console Button */}
+          {onOpenDatabaseModal && !isCollapsed && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={onOpenDatabaseModal}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800/90 border border-emerald-500/30 text-xs text-left cursor-pointer transition group shadow-sm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <Database className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-[11px] group-hover:text-emerald-300 transition">
+                      Cloud Firestore
+                    </div>
+                    <div className="text-[9px] text-slate-400">Database & Collections</div>
+                  </div>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            </div>
+          )}
+
           {/* Environmental Paper Savings Widget */}
           {!isCollapsed && (
-            <div className="mt-4 p-3 rounded-2xl bg-gradient-to-b from-slate-950/80 to-slate-900 border border-emerald-500/20 text-xs">
+            <div className="mt-3 p-3 rounded-2xl bg-gradient-to-b from-slate-950/80 to-slate-900 border border-emerald-500/20 text-xs">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-[11px] mb-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Paper Demand Reduced</span>

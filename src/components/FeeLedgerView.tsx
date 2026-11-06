@@ -350,14 +350,23 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
 
             {/* Header */}
             <div className="border-b-2 border-slate-900 pb-4 mb-4">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-amber-700">
-                Sri Sathya Sai Anandam School • Bursar Treasury
-              </div>
-              <h2 className="text-xl font-serif font-black uppercase tracking-tight mt-1">
-                Official Electronic Fee Receipt
-              </h2>
-              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                Receipt #{activeReceipt.receiptNo}
+              <div className="flex items-center gap-3">
+                <img
+                  src="/assets/sai_anandam_real_logo.png"
+                  alt="Sri Sathya Sai Anandam School"
+                  className="w-12 h-12 object-contain"
+                />
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-amber-700">
+                    Sri Sathya Sai Anandam School • Bursar Treasury
+                  </div>
+                  <h2 className="text-xl font-serif font-black uppercase tracking-tight mt-0.5">
+                    Official Electronic Fee Receipt
+                  </h2>
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    Receipt #{activeReceipt.receiptNo}
+                  </div>
+                </div>
               </div>
             </div>
 

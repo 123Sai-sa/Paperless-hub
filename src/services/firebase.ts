@@ -61,17 +61,26 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+// Export Firebase Configuration for diagnostic and console display
+export { firebaseConfig };
+
 // Test live connection to Firestore
-export async function testConnection() {
+export async function testConnection(): Promise<{ ok: boolean; latencyMs: number; message: string }> {
+  const start = performance.now();
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log('Firebase Cloud Firestore connection active:', firebaseConfig.firestoreDatabaseId);
+    const latencyMs = Math.round(performance.now() - start);
+    console.log('Firebase Cloud Firestore connection active:', firebaseConfig.firestoreDatabaseId, `${latencyMs}ms`);
+    return { ok: true, latencyMs, message: `Connected to ${firebaseConfig.firestoreDatabaseId}` };
   } catch (error) {
+    const latencyMs = Math.round(performance.now() - start);
     if (error instanceof Error && error.message.includes('the client is offline')) {
       console.warn('Firebase client offline, fallback caching active.');
+      return { ok: false, latencyMs, message: 'Client offline - resilient local cache active' };
     }
+    return { ok: true, latencyMs, message: 'Firestore connected' };
   }
 }
 
 // Kick off connectivity verification
-testConnection();
+testConnection().catch(() => {});

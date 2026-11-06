@@ -17,6 +17,7 @@ import { SecOpsSettingsView } from './components/SecOpsSettingsView';
 import { LecturesView } from './components/LecturesView';
 import { AssignmentsView } from './components/AssignmentsView';
 import { PrivateVaultView } from './components/PrivateVaultView';
+import { DatabaseConsoleModal } from './components/DatabaseConsoleModal';
 
 import { sdbmsApi } from './services/api';
 import { playInstitutionalChime } from './utils/audio';
@@ -42,6 +43,7 @@ export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => sdbmsApi.getStoredSession());
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [isGdprModalOpen, setIsGdprModalOpen] = useState(false);
+  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Individual Theme State (saved per user or global fallback)
@@ -456,6 +458,7 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
         onSwitchUserRole={handleSwitchUserRole}
         onOpenGdprModal={() => setIsGdprModalOpen(true)}
+        onOpenDatabaseModal={() => setIsDbModalOpen(true)}
         welcomeBanner={welcomeBanner}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled(!soundEnabled)}
@@ -487,6 +490,7 @@ export const App: React.FC = () => {
           unreadAnnouncementsCount={announcements.length}
           theme={theme}
           onToggleTheme={handleToggleTheme}
+          onOpenDatabaseModal={() => setIsDbModalOpen(true)}
         />
 
         {/* Main Container Viewport */}
@@ -619,6 +623,7 @@ export const App: React.FC = () => {
                   theme={theme}
                   onSetTheme={handleSetTheme}
                   onToggleTheme={handleToggleTheme}
+                  onOpenDatabaseModal={() => setIsDbModalOpen(true)}
                 />
               )}
 
@@ -638,6 +643,13 @@ export const App: React.FC = () => {
         onConsentAccepted={(updatedUser) => {
           setCurrentUser(updatedUser);
         }}
+      />
+
+      {/* Cloud Firestore Database Console & Security Modal */}
+      <DatabaseConsoleModal
+        isOpen={isDbModalOpen}
+        onClose={() => setIsDbModalOpen(false)}
+        onRefreshData={loadAllData}
       />
     </div>
   );

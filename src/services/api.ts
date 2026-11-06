@@ -33,7 +33,7 @@ import {
   INITIAL_LECTURES,
   INITIAL_ASSESSMENTS,
 } from '../data/sdbmsInitialData';
-import { db, auth, googleProvider, handleFirestoreError, OperationType } from './firebase';
+import { db, auth, googleProvider, handleFirestoreError, OperationType, firebaseConfig, testConnection } from './firebase';
 import {
   collection,
   doc,
@@ -302,9 +302,9 @@ export const sdbmsApi = {
     return updatedUser;
   },
 
-  // Users Management
+  // Users Management (Connected to Cloud Firestore Database)
   async getUsers(): Promise<User[]> {
-    return getStorageItem<User[]>('users', INITIAL_USERS);
+    return await syncCollection<User>('users', 'users', INITIAL_USERS);
   },
 
   async createUser(userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'>): Promise<User> {
@@ -325,6 +325,7 @@ export const sdbmsApi = {
     const users = getStorageItem<User[]>('users', INITIAL_USERS);
     const updated = [newUser, ...users];
     setStorageItem('users', updated);
+    await writeDocToFirestore('users', newUser.id, newUser);
 
     this.addAuditLog({
       actorId: 'admin',
@@ -348,6 +349,7 @@ export const sdbmsApi = {
     const updatedUser = { ...target, ...updates };
     users[targetIndex] = updatedUser;
     setStorageItem('users', users);
+    await writeDocToFirestore('users', updatedUser.id, updatedUser);
 
     // If password was updated
     if (updates.password && updates.password.trim()) {
@@ -381,6 +383,7 @@ export const sdbmsApi = {
     const target = users.find(u => u.id === id);
     const updated = users.filter(u => u.id !== id);
     setStorageItem('users', updated);
+    await deleteDocFromFirestore('users', id);
 
     this.addAuditLog({
       actorId: 'admin',
@@ -660,13 +663,9 @@ export const sdbmsApi = {
     return merged;
   },
 
-  // Fee Transactions
+  // Fee Transactions (Connected to Cloud Firestore Database)
   async getTransactions(): Promise<FeeTransaction[]> {
-    try {
-      const res = await fetch('/api/transactions');
-      if (res.ok) return await res.json();
-    } catch { /* fallback */ }
-    return getStorageItem<FeeTransaction[]>('transactions', INITIAL_TRANSACTIONS);
+    return await syncCollection<FeeTransaction>('transactions', 'transactions', INITIAL_TRANSACTIONS);
   },
 
   async recordTransaction(tx: Omit<FeeTransaction, 'id' | 'receiptNo' | 'verificationHash' | 'date'>): Promise<FeeTransaction> {
@@ -684,13 +683,7 @@ export const sdbmsApi = {
     const updated = [newTx, ...transactions];
     setStorageItem('transactions', updated);
 
-    try {
-      await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTx),
-      });
-    } catch { /* fallback */ }
+    await writeDocToFirestore('transactions', newTx.id, newTx);
 
     this.addAuditLog({
       actorId: 'bursar',
@@ -698,20 +691,16 @@ export const sdbmsApi = {
       actorRole: 'accountant',
       eventType: 'FEE_RECORDED',
       details: `Issued verified voucher ${newTx.receiptNo} for ${newTx.studentName} (Rs ${newTx.amount.toLocaleString()}) via ${newTx.paymentMethod}.`,
-      ipAddress: '127.0.0.1',
+      ipAddress: '127.0.0.1 (Firestore Database)',
       severity: 'info',
     });
 
     return newTx;
   },
 
-  // Announcements
+  // Announcements (Connected to Cloud Firestore Database)
   async getAnnouncements(): Promise<Announcement[]> {
-    try {
-      const res = await fetch('/api/announcements');
-      if (res.ok) return await res.json();
-    } catch { /* fallback */ }
-    return getStorageItem<Announcement[]>('announcements', INITIAL_ANNOUNCEMENTS);
+    return await syncCollection<Announcement>('announcements', 'announcements', INITIAL_ANNOUNCEMENTS);
   },
 
   async createAnnouncement(ann: Omit<Announcement, 'id' | 'timestamp' | 'readCount'>): Promise<Announcement> {
@@ -726,13 +715,7 @@ export const sdbmsApi = {
     const updated = [newAnn, ...list];
     setStorageItem('announcements', updated);
 
-    try {
-      await fetch('/api/announcements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAnn),
-      });
-    } catch { /* fallback */ }
+    await writeDocToFirestore('announcements', newAnn.id, newAnn);
 
     this.addAuditLog({
       actorId: ann.author,
@@ -740,7 +723,7 @@ export const sdbmsApi = {
       actorRole: ann.role,
       eventType: 'BROADCAST_ALERT',
       details: `Published institutional announcement: "${ann.title}" (${ann.priority.toUpperCase()}).`,
-      ipAddress: '127.0.0.1',
+      ipAddress: '127.0.0.1 (Firestore Database)',
       severity: ann.priority === 'critical' ? 'critical' : 'info',
     });
 
@@ -752,18 +735,12 @@ export const sdbmsApi = {
     const updated = list.filter(a => a.id !== id);
     setStorageItem('announcements', updated);
 
-    try {
-      await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
-    } catch { /* fallback */ }
+    await deleteDocFromFirestore('announcements', id);
   },
 
-  // Audit Logs
+  // Audit Logs (Connected to Cloud Firestore Database)
   async getAuditLogs(): Promise<AuditLog[]> {
-    try {
-      const res = await fetch('/api/audit-logs');
-      if (res.ok) return await res.json();
-    } catch { /* fallback */ }
-    return getStorageItem<AuditLog[]>('audit_logs', INITIAL_AUDIT_LOGS);
+    return await syncCollection<AuditLog>('audit_logs', 'audit_logs', INITIAL_AUDIT_LOGS);
   },
 
   addAuditLog(entry: Omit<AuditLog, 'id' | 'timestamp'>): void {
@@ -774,6 +751,7 @@ export const sdbmsApi = {
     };
     const logs = getStorageItem<AuditLog[]>('audit_logs', INITIAL_AUDIT_LOGS);
     setStorageItem('audit_logs', [newLog, ...logs].slice(0, 300));
+    writeDocToFirestore('audit_logs', newLog.id, newLog).catch(() => {});
   },
 
   // Academic Calendar & Working Days
@@ -965,13 +943,9 @@ export const sdbmsApi = {
     return Promise.resolve();
   },
 
-  // Calendar events
+  // Calendar events (Connected to Cloud Firestore Database)
   async getCalendarEvents(): Promise<CalendarEvent[]> {
-    try {
-      const res = await fetch('/api/calendar');
-      if (res.ok) return await res.json();
-    } catch { /* fallback */ }
-    return getStorageItem<CalendarEvent[]>('calendar_events', INITIAL_CALENDAR_EVENTS);
+    return await syncCollection<CalendarEvent>('calendar_events', 'calendar_events', INITIAL_CALENDAR_EVENTS);
   },
 
   async addCalendarEvent(eventData: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> {
@@ -982,6 +956,8 @@ export const sdbmsApi = {
     const list = getStorageItem<CalendarEvent[]>('calendar_events', INITIAL_CALENDAR_EVENTS);
     const updated = [...list, newEvent];
     setStorageItem('calendar_events', updated);
+
+    await writeDocToFirestore('calendar_events', newEvent.id, newEvent);
 
     this.addAuditLog({
       actorId: 'admin',
@@ -1048,10 +1024,10 @@ export const sdbmsApi = {
   },
 
   // ----------------------------------------------------
-  // Lectures & Digital Classrooms
+  // Lectures & Digital Classrooms (Connected to Cloud Firestore Database)
   // ----------------------------------------------------
   async getLectures(): Promise<Lecture[]> {
-    return getStorageItem<Lecture[]>('lectures', INITIAL_LECTURES);
+    return await syncCollection<Lecture>('lectures', 'lectures', INITIAL_LECTURES);
   },
 
   async createLecture(lectureData: Omit<Lecture, 'id' | 'completedBy'>): Promise<Lecture> {
@@ -1063,6 +1039,8 @@ export const sdbmsApi = {
     };
     const updated = [newLecture, ...lectures];
     setStorageItem('lectures', updated);
+
+    await writeDocToFirestore('lectures', newLecture.id, newLecture);
 
     this.addAuditLog({
       actorId: lectureData.teacherId,
@@ -1085,6 +1063,8 @@ export const sdbmsApi = {
     const updatedLecture = { ...target, ...updates };
     const updated = lectures.map(l => (l.id === id ? updatedLecture : l));
     setStorageItem('lectures', updated);
+
+    await writeDocToFirestore('lectures', id, updatedLecture);
     return updatedLecture;
   },
 
@@ -1093,6 +1073,8 @@ export const sdbmsApi = {
     const target = lectures.find(l => l.id === id);
     const updated = lectures.filter(l => l.id !== id);
     setStorageItem('lectures', updated);
+
+    await deleteDocFromFirestore('lectures', id);
 
     this.addAuditLog({
       actorId: 'teacher',
@@ -1118,14 +1100,19 @@ export const sdbmsApi = {
     const updatedLecture = { ...target, completedBy };
     const updated = lectures.map(l => (l.id === lectureId ? updatedLecture : l));
     setStorageItem('lectures', updated);
+
+    await writeDocToFirestore('lectures', lectureId, updatedLecture);
     return updatedLecture;
   },
 
   // ----------------------------------------------------
   // Assessments & Homework Assignments
   // ----------------------------------------------------
+  // ----------------------------------------------------
+  // Assessments & Homework Assignments (Connected to Cloud Firestore Database)
+  // ----------------------------------------------------
   async getAssessments(): Promise<Assessment[]> {
-    return getStorageItem<Assessment[]>('assessments', INITIAL_ASSESSMENTS);
+    return await syncCollection<Assessment>('assessments', 'assessments', INITIAL_ASSESSMENTS);
   },
 
   async createAssessment(assessmentData: Omit<Assessment, 'id' | 'submissions'>): Promise<Assessment> {
@@ -1137,6 +1124,8 @@ export const sdbmsApi = {
     };
     const updated = [newAssessment, ...assessments];
     setStorageItem('assessments', updated);
+
+    await writeDocToFirestore('assessments', newAssessment.id, newAssessment);
 
     this.addAuditLog({
       actorId: assessmentData.teacherId,
@@ -1159,6 +1148,8 @@ export const sdbmsApi = {
     const updatedAssessment = { ...target, ...updates };
     const updated = assessments.map(a => (a.id === id ? updatedAssessment : a));
     setStorageItem('assessments', updated);
+
+    await writeDocToFirestore('assessments', id, updatedAssessment);
     return updatedAssessment;
   },
 
@@ -1167,6 +1158,8 @@ export const sdbmsApi = {
     const target = assessments.find(a => a.id === id);
     const updated = assessments.filter(a => a.id !== id);
     setStorageItem('assessments', updated);
+
+    await deleteDocFromFirestore('assessments', id);
 
     this.addAuditLog({
       actorId: 'teacher',
@@ -1225,6 +1218,8 @@ export const sdbmsApi = {
     const updated = assessments.map(a => (a.id === assessmentId ? updatedAssessment : a));
     setStorageItem('assessments', updated);
 
+    await writeDocToFirestore('assessments', assessmentId, updatedAssessment);
+
     this.addAuditLog({
       actorId: submissionData.studentId,
       actorName: submissionData.studentName,
@@ -1270,6 +1265,8 @@ export const sdbmsApi = {
 
     const updated = assessments.map(a => (a.id === assessmentId ? updatedAssessment : a));
     setStorageItem('assessments', updated);
+
+    await writeDocToFirestore('assessments', assessmentId, updatedAssessment);
 
     const gradedSub = target.submissions.find(s => s.id === submissionId);
     this.addAuditLog({
@@ -1349,12 +1346,14 @@ export const sdbmsApi = {
       updated = [{ ...cred, updatedAt: new Date().toISOString() }, ...allCreds];
     }
     setStorageItem('vault_credentials', updated);
+    await writeDocToFirestore('vault_credentials', cred.id, cred);
     return cred;
   },
 
   async deleteVaultCredential(id: string): Promise<void> {
     const allCreds = getStorageItem<VaultCredential[]>('vault_credentials', []);
     setStorageItem('vault_credentials', allCreds.filter(c => c.id !== id));
+    await deleteDocFromFirestore('vault_credentials', id);
   },
 
   async getVaultDocuments(userId: string): Promise<VaultDocument[]> {
@@ -1410,12 +1409,14 @@ export const sdbmsApi = {
       updated = [doc, ...allDocs];
     }
     setStorageItem('vault_documents', updated);
+    await writeDocToFirestore('vault_documents', doc.id, doc);
     return doc;
   },
 
   async deleteVaultDocument(id: string): Promise<void> {
     const allDocs = getStorageItem<VaultDocument[]>('vault_documents', []);
     setStorageItem('vault_documents', allDocs.filter(d => d.id !== id));
+    await deleteDocFromFirestore('vault_documents', id);
   },
 
   // Factory reset
@@ -1434,5 +1435,86 @@ export const sdbmsApi = {
     localStorage.removeItem('sdbms_welcome_banner');
     localStorage.removeItem('sdbms_lectures');
     localStorage.removeItem('sdbms_assessments');
+  },
+
+  // Database Management & Firestore Seeding
+  async seedAllToFirestore(): Promise<{ success: boolean; count: number }> {
+    let totalSeeded = 0;
+    try {
+      await seedCollectionToFirestore('users', getStorageItem<User[]>('users', INITIAL_USERS));
+      totalSeeded += INITIAL_USERS.length;
+
+      await seedCollectionToFirestore('grades', getStorageItem<StudentGrade[]>('grades', INITIAL_GRADES));
+      totalSeeded += INITIAL_GRADES.length;
+
+      await seedCollectionToFirestore('transactions', getStorageItem<FeeTransaction[]>('transactions', INITIAL_TRANSACTIONS));
+      totalSeeded += INITIAL_TRANSACTIONS.length;
+
+      await seedCollectionToFirestore('announcements', getStorageItem<Announcement[]>('announcements', INITIAL_ANNOUNCEMENTS));
+      totalSeeded += INITIAL_ANNOUNCEMENTS.length;
+
+      await seedCollectionToFirestore('audit_logs', getStorageItem<AuditLog[]>('audit_logs', INITIAL_AUDIT_LOGS));
+      totalSeeded += INITIAL_AUDIT_LOGS.length;
+
+      await seedCollectionToFirestore('calendar_events', getStorageItem<CalendarEvent[]>('calendar_events', INITIAL_CALENDAR_EVENTS));
+      totalSeeded += INITIAL_CALENDAR_EVENTS.length;
+
+      await seedCollectionToFirestore('lectures', getStorageItem<Lecture[]>('lectures', INITIAL_LECTURES));
+      totalSeeded += INITIAL_LECTURES.length;
+
+      await seedCollectionToFirestore('assessments', getStorageItem<Assessment[]>('assessments', INITIAL_ASSESSMENTS));
+      totalSeeded += INITIAL_ASSESSMENTS.length;
+
+      return { success: true, count: totalSeeded };
+    } catch (err) {
+      console.error('Seed all error:', err);
+      return { success: false, count: totalSeeded };
+    }
+  },
+
+  async testFirestoreConnection(): Promise<{ ok: boolean; latencyMs: number; message: string }> {
+    return await testConnection();
+  },
+
+  async getFirestoreStats(): Promise<{
+    connected: boolean;
+    databaseId: string;
+    projectId: string;
+    latencyMs: number;
+    collections: { name: string; count: number; status: string }[];
+  }> {
+    const conn = await testConnection();
+    const colNames = [
+      'users',
+      'grades',
+      'transactions',
+      'announcements',
+      'audit_logs',
+      'calendar_events',
+      'lectures',
+      'assessments',
+      'vault_credentials',
+      'vault_documents',
+    ];
+
+    const results = await Promise.all(
+      colNames.map(async (cName) => {
+        try {
+          const snap = await getDocs(collection(db, cName));
+          return { name: cName, count: snap.size, status: 'Synced' };
+        } catch {
+          const localItems = getStorageItem<any[]>(cName, []);
+          return { name: cName, count: localItems.length, status: 'Cached' };
+        }
+      })
+    );
+
+    return {
+      connected: conn.ok,
+      databaseId: firebaseConfig.firestoreDatabaseId,
+      projectId: firebaseConfig.projectId,
+      latencyMs: conn.latencyMs,
+      collections: results,
+    };
   },
 };

@@ -33,6 +33,7 @@ import {
   X,
   AlertCircle,
   Copy,
+  Database,
 } from 'lucide-react';
 import { User, UserRole, NavigationTab, WelcomeBannerConfig } from '../types';
 
@@ -43,6 +44,7 @@ interface HeaderProps {
   onLogout: () => void;
   onSwitchUserRole: (role: UserRole) => void;
   onOpenGdprModal: () => void;
+  onOpenDatabaseModal?: () => void;
   welcomeBanner: WelcomeBannerConfig;
   soundEnabled: boolean;
   onToggleSound: () => void;
@@ -65,6 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onSwitchUserRole,
   onOpenGdprModal,
+  onOpenDatabaseModal,
   welcomeBanner,
   soundEnabled,
   onToggleSound,
@@ -201,11 +204,11 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-xs font-bold hidden sm:inline">Slidebar</span>
           </button>
 
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-400/80 shadow-[0_0_12px_rgba(245,158,11,0.25)] bg-slate-900 p-0.5 shrink-0 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-400/90 shadow-[0_0_12px_rgba(245,158,11,0.25)] bg-white p-0.5 shrink-0 flex items-center justify-center">
             <img
-              src="/assets/sai_anandam_logo.jpg"
+              src="/assets/sai_anandam_real_logo.png"
               alt="Sri Sathya Sai Anandam School Logo"
-              className="w-full h-full object-contain rounded-full"
+              className="w-full h-full object-contain"
             />
           </div>
           <div>
@@ -265,6 +268,20 @@ export const Header: React.FC<HeaderProps> = ({
             <Shield className="w-3.5 h-3.5 text-indigo-400" />
             <span>GDPR Active</span>
           </button>
+
+          {/* Cloud Firestore Database Console Pill */}
+          {onOpenDatabaseModal && (
+            <button
+              type="button"
+              onClick={onOpenDatabaseModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition cursor-pointer"
+              title="Inspect Cloud Firestore Database & Collections"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Database className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Firebase DB</span>
+            </button>
+          )}
 
           {/* Active User Chip & Profile Dropdown */}
           <div className="relative">
@@ -394,6 +411,23 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="font-semibold text-xs">🔒 Open Private Vault</span>
                     <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
                   </button>
+
+                  {onOpenDatabaseModal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRoleDropdownOpen(false);
+                        onOpenDatabaseModal();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-emerald-300 hover:text-white flex items-center justify-between border border-slate-700 transition cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Database className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="font-semibold text-xs">Firestore Database Console</span>
+                      </div>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    </button>
+                  )}
 
                   <button
                     type="button"

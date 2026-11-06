@@ -22,6 +22,7 @@ interface SecOpsSettingsViewProps {
   theme?: 'dark' | 'light';
   onSetTheme?: (theme: 'dark' | 'light') => void;
   onToggleTheme?: () => void;
+  onOpenDatabaseModal?: () => void;
 }
 
 export const SecOpsSettingsView: React.FC<SecOpsSettingsViewProps> = ({
@@ -32,6 +33,7 @@ export const SecOpsSettingsView: React.FC<SecOpsSettingsViewProps> = ({
   theme = 'dark',
   onSetTheme,
   onToggleTheme,
+  onOpenDatabaseModal,
 }) => {
   const [bannerText, setBannerText] = useState(welcomeBanner.text);
   const [bannerEnabled, setBannerEnabled] = useState(welcomeBanner.enabled);
@@ -70,6 +72,43 @@ export const SecOpsSettingsView: React.FC<SecOpsSettingsViewProps> = ({
         <p className="text-xs text-slate-400 mt-1">
           Master administrative controls for Sri Sathya Sai Anandam School.
         </p>
+      </div>
+
+      {/* Cloud Firestore Database Engine Card */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/70 border border-emerald-500/30 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <Database className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                Database Engine: Cloud Firestore Online
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                ai-studio-paperlesshub-5e85e1d9-491f-4ca4-ab9b-6ccd5a952012
+              </span>
+            </div>
+            <h2 className="text-base font-bold text-white mt-1">
+              Live Cloud Firestore Persistence & Security Rules
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
+              All institutional gradebooks, fee ledger vouchers, announcements, audit trails, and confidential vaults synchronize with Google Cloud Firestore in real time.
+            </p>
+          </div>
+        </div>
+
+        {onOpenDatabaseModal && (
+          <button
+            type="button"
+            onClick={onOpenDatabaseModal}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 cursor-pointer transition shadow-lg shadow-emerald-600/20 shrink-0"
+          >
+            <Database className="w-4 h-4" />
+            <span>Launch Firestore Console</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

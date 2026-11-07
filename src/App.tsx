@@ -186,7 +186,7 @@ export const App: React.FC = () => {
   };
 
   // --- Handlers for User Management ---
-  const handleAddUser = async (userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'>) => {
+  const handleAddUser = async (userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'> & { id?: string }) => {
     const newUser = await sdbmsApi.createUser(userData);
     setUsers((prev) => [newUser, ...prev]);
     const updatedLogs = await sdbmsApi.getAuditLogs();

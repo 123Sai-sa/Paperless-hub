@@ -307,33 +307,212 @@ export const sdbmsApi = {
     return await syncCollection<User>('users', 'users', INITIAL_USERS);
   },
 
-  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'>): Promise<User> {
+  async registerUser(userData: {
+    fullName: string;
+    username: string;
+    role: UserRole;
+    email: string;
+    password: string;
+    phone?: string;
+    classSec?: string;
+    rollNo?: string;
+    apaarId?: string;
+    penId?: string;
+    id?: string;
+  }): Promise<{ token: string; user: User }> {
+    const users = await this.getUsers();
+    const cleanUsername = userData.username.trim();
+    const cleanEmail = userData.email.trim().toLowerCase();
+
+    // 1. Validation for unique username
+    if (users.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase())) {
+      throw new Error(`Username "${cleanUsername}" is already registered. Please choose another login username.`);
+    }
+
+    // 2. Validation for unique email
+    if (users.some(u => u.email.toLowerCase() === cleanEmail)) {
+      throw new Error(`Email address "${cleanEmail}" is already registered. Please sign in or use another email.`);
+    }
+
+    // 3. Structured Institutional ID generation
+    let finalId = userData.id && userData.id.trim() ? userData.id.trim() : '';
+    if (!finalId) {
+      const rolePrefix: Record<UserRole, string> = {
+        student: 'STD-2026',
+        teacher: 'TCH-2026',
+        admin: 'ADM-2026',
+        parent: 'PAR-2026',
+        accountant: 'ACC-2026',
+      };
+      const count = users.filter(u => u.role === userData.role).length + 1;
+      finalId = `${rolePrefix[userData.role] || 'USR'}-${String(count).padStart(3, '0')}`;
+    }
+
+    if (users.some(u => u.id.toLowerCase() === finalId.toLowerCase())) {
+      finalId = `${finalId}-${Math.random().toString(36).substring(2, 5)}`;
+    }
+
+    const cleanPassword = userData.password.trim() || (userData.role === 'admin' ? 'admin123' : userData.role === 'teacher' ? 'teach123' : 'sai123');
+
+    const newUser: User = {
+      id: finalId,
+      fullName: userData.fullName.trim(),
+      username: cleanUsername,
+      role: userData.role,
+      email: cleanEmail,
+      phone: userData.phone?.trim() || undefined,
+      classSec: userData.classSec?.trim() || (userData.role === 'student' ? 'Class 10-A' : undefined),
+      rollNo: userData.rollNo?.trim() || undefined,
+      apaarId: userData.apaarId?.trim() || undefined,
+      penId: userData.penId?.trim() || undefined,
+      status: 'active',
+      twoFactorEnabled: userData.role === 'admin',
+      password: cleanPassword,
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+    };
+
+    // Store password for instant lookup
+    const passwords = getStorageItem<Record<string, string>>('passwords', {});
+    passwords[newUser.id] = cleanPassword;
+    passwords[newUser.username] = cleanPassword;
+    setStorageItem('passwords', passwords);
+
+    // Save user locally and to Firestore
+    const updated = [newUser, ...users];
+    setStorageItem('users', updated);
+    await writeDocToFirestore('users', newUser.id, newUser);
+
+    // If new user is a student, auto-register an initial gradebook record so they appear in classwise gradebook immediately
+    if (newUser.role === 'student' && newUser.classSec) {
+      const grades = getStorageItem<StudentGrade[]>('grades', INITIAL_GRADES);
+      const existsInGrades = grades.some(g => g.studentId === newUser.id);
+      if (!existsInGrades) {
+        const newGrade: StudentGrade = {
+          id: `grd-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
+          studentId: newUser.id,
+          studentName: newUser.fullName,
+          rollNo: newUser.rollNo || `R-${newUser.id.slice(-3)}`,
+          classSec: newUser.classSec,
+          examTermId: 'term-mid-2026',
+          scores: { sub_eng: 75, sub_math: 75, sub_sci: 75, sub_soc: 75, sub_san: 80, sub_yoga: 85 },
+          totalMarks: 465,
+          maxPossible: 600,
+          percentage: 77.5,
+          gpa: 7.8,
+          grade: 'B+',
+          status: 'pass',
+          rank: grades.filter(g => g.classSec === newUser.classSec).length + 1,
+          remarks: 'Newly registered student. Academic marksheet ledger activated.',
+          lastUpdated: new Date().toISOString(),
+        };
+        const updatedGrades = [newGrade, ...grades];
+        setStorageItem('grades', updatedGrades);
+        writeDocToFirestore('grades', newGrade.id, newGrade).catch(() => {});
+      }
+    }
+
+    const token = `sdbms_jwt_${newUser.id}_${Date.now()}`;
+    setStoredSession(token, newUser);
+
+    this.addAuditLog({
+      actorId: newUser.id,
+      actorName: newUser.fullName,
+      actorRole: newUser.role,
+      eventType: 'USER_REGISTER',
+      details: `New institutional registration completed for ${newUser.fullName} (${newUser.role.toUpperCase()}). ID: ${newUser.id}, Username: @${newUser.username}.`,
+      ipAddress: '127.0.0.1 (Institutional Registration Portal)',
+      severity: 'info',
+    });
+
+    return { token, user: newUser };
+  },
+
+  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'> & { id?: string }): Promise<User> {
+    const users = await this.getUsers();
+    const cleanUsername = userData.username.trim();
+    const cleanEmail = userData.email.trim().toLowerCase();
+
+    // Check duplicate username
+    if (users.some(u => u.username.toLowerCase() === cleanUsername.toLowerCase())) {
+      throw new Error(`Username "${cleanUsername}" is already taken in the directory. Please use a distinct username.`);
+    }
+
+    // Check duplicate email
+    if (users.some(u => u.email.toLowerCase() === cleanEmail)) {
+      throw new Error(`Email address "${cleanEmail}" is already registered. Please provide a distinct email address.`);
+    }
+
+    let finalId = userData.id && userData.id.trim() ? userData.id.trim() : '';
+    if (!finalId) {
+      const rolePrefix: Record<UserRole, string> = {
+        student: 'STD-2026',
+        teacher: 'TCH-2026',
+        admin: 'ADM-2026',
+        parent: 'PAR-2026',
+        accountant: 'ACC-2026',
+      };
+      const count = users.filter(u => u.role === userData.role).length + 1;
+      finalId = `${rolePrefix[userData.role] || 'USR'}-${String(count).padStart(3, '0')}`;
+    }
+
+    const cleanPassword = userData.password && userData.password.trim() ? userData.password.trim() : (userData.role === 'admin' ? 'admin123' : userData.role === 'teacher' ? 'teach123' : 'sai123');
+
     const newUser: User = {
       ...userData,
-      id: `u-${Date.now().toString(36)}`,
+      id: finalId,
+      username: cleanUsername,
+      email: cleanEmail,
+      password: cleanPassword,
       createdAt: new Date().toISOString(),
       lastLogin: 'Never',
     };
 
-    if (userData.password && userData.password.trim()) {
-      const passwords = getStorageItem<Record<string, string>>('passwords', {});
-      passwords[newUser.id] = userData.password.trim();
-      passwords[newUser.username] = userData.password.trim();
-      setStorageItem('passwords', passwords);
-    }
+    const passwords = getStorageItem<Record<string, string>>('passwords', {});
+    passwords[newUser.id] = cleanPassword;
+    passwords[newUser.username] = cleanPassword;
+    setStorageItem('passwords', passwords);
 
-    const users = getStorageItem<User[]>('users', INITIAL_USERS);
     const updated = [newUser, ...users];
     setStorageItem('users', updated);
     await writeDocToFirestore('users', newUser.id, newUser);
+
+    // If student, ensure gradebook entry
+    if (newUser.role === 'student' && newUser.classSec) {
+      const grades = getStorageItem<StudentGrade[]>('grades', INITIAL_GRADES);
+      const existsInGrades = grades.some(g => g.studentId === newUser.id);
+      if (!existsInGrades) {
+        const newGrade: StudentGrade = {
+          id: `grd-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
+          studentId: newUser.id,
+          studentName: newUser.fullName,
+          rollNo: newUser.rollNo || `R-${newUser.id.slice(-3)}`,
+          classSec: newUser.classSec,
+          examTermId: 'term-mid-2026',
+          scores: { sub_eng: 75, sub_math: 75, sub_sci: 75, sub_soc: 75, sub_san: 80, sub_yoga: 85 },
+          totalMarks: 465,
+          maxPossible: 600,
+          percentage: 77.5,
+          gpa: 7.8,
+          grade: 'B+',
+          status: 'pass',
+          rank: grades.filter(g => g.classSec === newUser.classSec).length + 1,
+          remarks: 'Provisioned student record. Academic ledger active.',
+          lastUpdated: new Date().toISOString(),
+        };
+        const updatedGrades = [newGrade, ...grades];
+        setStorageItem('grades', updatedGrades);
+        writeDocToFirestore('grades', newGrade.id, newGrade).catch(() => {});
+      }
+    }
 
     this.addAuditLog({
       actorId: 'admin',
       actorName: 'System Administrator',
       actorRole: 'admin',
       eventType: 'USER_CREATE',
-      details: `Created new user account: ${newUser.fullName} (${newUser.role}).`,
-      ipAddress: '127.0.0.1',
+      details: `Provisioned new user account: ${newUser.fullName} (${newUser.role.toUpperCase()}). ID: ${newUser.id}, Username: @${newUser.username}.`,
+      ipAddress: '127.0.0.1 (SecOps Admin Terminal)',
       severity: 'info',
     });
 
@@ -478,6 +657,12 @@ export const sdbmsApi = {
       const vaultDocs = getStorageItem<VaultDocument[]>('vault_documents', []);
       const updatedVaultDocs = vaultDocs.map(d => (d.userId === userId ? { ...d, userId: newId } : d));
       setStorageItem('vault_documents', updatedVaultDocs);
+    }
+
+    // Persist to Cloud Firestore
+    await writeDocToFirestore('users', newId, updatedUser);
+    if (newId !== userId) {
+      await deleteDocFromFirestore('users', userId);
     }
 
     // Keep active session in sync if current logged-in user is this user

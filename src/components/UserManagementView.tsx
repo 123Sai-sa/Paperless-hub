@@ -22,12 +22,14 @@ import {
   X,
   RefreshCw,
   AlertCircle,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 
 interface UserManagementViewProps {
   users: User[];
-  onAddUser: (userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'>) => Promise<void>;
+  onAddUser: (userData: Omit<User, 'id' | 'createdAt' | 'lastLogin'> & { id?: string }) => Promise<void>;
   onUpdateUser: (id: string, updates: Partial<User>) => Promise<void>;
   onDeleteUser: (id: string) => Promise<void>;
   onChangeStudentCredentials?: (
@@ -70,6 +72,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const [credErrorMsg, setCredErrorMsg] = useState<string | null>(null);
 
   // Form State for regular Provision / Edit
+  const [formId, setFormId] = useState('');
   const [formFullName, setFormFullName] = useState('');
   const [formUsername, setFormUsername] = useState('');
   const [formRole, setFormRole] = useState<UserRole>('student');
@@ -80,7 +83,17 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const [formApaarId, setFormApaarId] = useState('');
   const [formPenId, setFormPenId] = useState('');
   const [formNewPassword, setFormNewPassword] = useState('');
+  const [formConfirmPassword, setFormConfirmPassword] = useState('');
+  const [showFormPassword, setShowFormPassword] = useState(false);
   const [formErrorMsg, setFormErrorMsg] = useState<string | null>(null);
+
+  // Register Counts
+  const studentCount = users.filter((u) => u.role === 'student').length;
+  const teacherCount = users.filter((u) => u.role === 'teacher').length;
+  const adminCount = users.filter((u) => u.role === 'admin').length;
+  const parentCount = users.filter((u) => u.role === 'parent').length;
+  const accountantCount = users.filter((u) => u.role === 'accountant').length;
+  const apaarLinkedCount = users.filter((u) => u.apaarId && u.apaarId.trim().length > 0).length;
 
   const filteredUsers = users.filter((u) => {
     const matchesRole = selectedRole === 'all' || u.role === selectedRole;
@@ -90,7 +103,8 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (u.rollNo && u.rollNo.toLowerCase() === searchValSafe(searchQuery)) ||
-      (u.apaarId && u.apaarId.includes(searchQuery));
+      (u.apaarId && u.apaarId.includes(searchQuery)) ||
+      (u.classSec && u.classSec.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesRole && matchesQuery;
   });
 
@@ -99,6 +113,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   }
 
   const handleOpenAddModal = () => {
+    setFormId('');
     setFormFullName('');
     setFormUsername('');
     setFormRole('student');
@@ -108,9 +123,47 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     setFormRollNo('');
     setFormApaarId('');
     setFormPenId('');
-    setFormNewPassword('');
+    setFormNewPassword('sai123');
+    setFormConfirmPassword('sai123');
+    setShowFormPassword(false);
     setFormErrorMsg(null);
     setIsAddModalOpen(true);
+  };
+
+  const handleGenerateFormPassword = () => {
+    const adjectives = ['Prasanthi', 'Anandam', 'Dharma', 'Sathya', 'Prema', 'Vidya', 'Shanti'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const pass = `${adj}#${num}!`;
+    setFormNewPassword(pass);
+    setFormConfirmPassword(pass);
+  };
+
+  const handleExportRegisterCSV = () => {
+    const headers = ['Institutional ID', 'Full Legal Name', 'Role', 'Username', 'Email', 'Phone', 'Class/Section', 'Roll No', 'APAAR ID', 'PEN ID', 'Status'];
+    const rows = filteredUsers.map((u) => [
+      `"${u.id}"`,
+      `"${u.fullName.replace(/"/g, '""')}"`,
+      `"${u.role.toUpperCase()}"`,
+      `"${u.username}"`,
+      `"${u.email}"`,
+      `"${u.phone || ''}"`,
+      `"${u.classSec || ''}"`,
+      `"${u.rollNo || ''}"`,
+      `"${u.apaarId || ''}"`,
+      `"${u.penId || ''}"`,
+      `"${u.status.toUpperCase()}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const roleLabel = selectedRole === 'all' ? 'All_Institutional_Register' : `${selectedRole.toUpperCase()}_Register`;
+    link.setAttribute('download', `Sri_Sathya_Sai_Anandam_${roleLabel}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleOpenCredentialsModal = (user: User) => {
@@ -209,34 +262,58 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       return;
     }
 
+    if (!editingUser) {
+      if (!formNewPassword || formNewPassword.trim().length < 4) {
+        setFormErrorMsg('Password must be at least 4 characters long.');
+        return;
+      }
+      if (formNewPassword !== formConfirmPassword) {
+        setFormErrorMsg('Password and Confirm Password do not match.');
+        return;
+      }
+      if (users.some((u) => u.username.toLowerCase() === formUsername.trim().toLowerCase())) {
+        setFormErrorMsg(`Username "${formUsername.trim()}" is already registered. Please choose a different username.`);
+        return;
+      }
+      if (users.some((u) => u.email.toLowerCase() === formEmail.trim().toLowerCase())) {
+        setFormErrorMsg(`Email "${formEmail.trim()}" is already registered. Please provide a different email.`);
+        return;
+      }
+      if (formId.trim() && users.some((u) => u.id.toLowerCase() === formId.trim().toLowerCase())) {
+        setFormErrorMsg(`Institutional ID "${formId.trim()}" is already assigned to another user.`);
+        return;
+      }
+    }
+
     try {
       if (editingUser) {
         await onUpdateUser(editingUser.id, {
-          fullName: formFullName,
-          email: formEmail,
-          phone: formPhone,
+          fullName: formFullName.trim(),
+          email: formEmail.trim(),
+          phone: formPhone.trim() || undefined,
           role: formRole,
-          classSec: formClassSec,
-          rollNo: formRollNo,
-          apaarId: formApaarId,
-          penId: formPenId,
+          classSec: formClassSec.trim(),
+          rollNo: formRollNo.trim() || undefined,
+          apaarId: formApaarId.trim() || undefined,
+          penId: formPenId.trim() || undefined,
           ...(formNewPassword.trim() ? { password: formNewPassword.trim() } : {}),
         });
         setEditingUser(null);
       } else {
         await onAddUser({
-          fullName: formFullName,
-          username: formUsername,
+          id: formId.trim() || undefined,
+          fullName: formFullName.trim(),
+          username: formUsername.trim(),
           role: formRole,
-          email: formEmail,
-          phone: formPhone,
-          classSec: formClassSec,
-          rollNo: formRollNo,
-          apaarId: formApaarId,
-          penId: formPenId,
+          email: formEmail.trim(),
+          phone: formPhone.trim() || undefined,
+          classSec: formClassSec.trim(),
+          rollNo: formRollNo.trim() || undefined,
+          apaarId: formApaarId.trim() || undefined,
+          penId: formPenId.trim() || undefined,
           status: 'active',
-          twoFactorEnabled: false,
-          ...(formNewPassword.trim() ? { password: formNewPassword.trim() } : {}),
+          twoFactorEnabled: formRole === 'admin',
+          password: formNewPassword.trim(),
         });
         setIsAddModalOpen(false);
       }

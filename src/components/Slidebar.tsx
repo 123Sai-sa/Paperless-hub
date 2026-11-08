@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   Database,
+  CalendarCheck,
 } from 'lucide-react';
 import { NavigationTab, User } from '../types';
 
@@ -114,6 +115,13 @@ export const Slidebar: React.FC<SlidebarProps> = ({
       items: [
         { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
         { tab: 'academics', label: 'Gradebook', icon: Award },
+        {
+          tab: 'attendance',
+          label: 'Attendance Book',
+          icon: CalendarCheck,
+          badge: isStudent ? 'Daily Log' : 'Class Register',
+          badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+        },
         { tab: 'calendar', label: 'Academic Calendar', icon: Calendar },
         { tab: 'ai-diagnostic', label: 'AI Diagnostic Dossier', icon: Brain },
       ],
@@ -168,7 +176,7 @@ export const Slidebar: React.FC<SlidebarProps> = ({
     admin: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
     teacher: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
     student: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    parent: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    accountant: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
   };
 
   return (

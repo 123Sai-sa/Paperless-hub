@@ -13,16 +13,17 @@ import {
   WelcomeBannerConfig,
   Lecture,
   Assessment,
+  AttendanceRecord,
 } from '../types';
 
 export const INITIAL_USERS: User[] = [
   {
     id: 'u-admin-01',
     username: 'admin',
-    password: 'admin123',
+    password: 'Sai Anandam',
     fullName: 'Dr. S. K. Ramanathan',
     role: 'admin',
-    email: 'principal@sdbms.sai.edu',
+    email: 'admin@sssas.edu',
     phone: '+91 98450 11220',
     status: 'active',
     twoFactorEnabled: true,
@@ -33,10 +34,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-teach-01',
     username: 'teacher_math',
-    password: 'teach123',
+    password: 'Sai Anandam',
     fullName: 'Prof. Ananya Sharma',
     role: 'teacher',
-    email: 'ananya.sharma@sdbms.sai.edu',
+    email: 'ananya.sharma@sssas.edu',
     phone: '+91 94481 22334',
     classSec: 'Class 10-A',
     status: 'active',
@@ -48,10 +49,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-teach-02',
     username: 'teacher_sci',
-    password: 'teach123',
+    password: 'Sai Anandam',
     fullName: 'Dr. K. Murali Krishna',
     role: 'teacher',
-    email: 'murali.krishna@sdbms.sai.edu',
+    email: 'murali.krishna@sssas.edu',
     phone: '+91 98802 33445',
     classSec: 'Class 12-B',
     status: 'active',
@@ -63,10 +64,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-stud-01',
     username: 'student_sai',
-    password: 'sai123',
+    password: 'Sai Anandam',
     fullName: 'Sai Anandam K.',
     role: 'student',
-    email: 'saianandam05@gmail.com',
+    email: 'sai.anandam@sssas.edu',
     phone: '+91 99001 55667',
     classSec: 'Class 10-A',
     rollNo: '10A-14',
@@ -74,6 +75,8 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09881',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 1,
+    badges: ['Prasanthi Scholar', 'Math Star', '100% Attendance'],
     lastLogin: '2026-09-18T22:10:00Z',
     createdAt: '2024-08-01T10:00:00Z',
     gdprConsentDate: '2025-01-15T11:00:00Z',
@@ -81,10 +84,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-stud-02',
     username: 'student_priya',
-    password: 'priya123',
+    password: 'Sai Anandam',
     fullName: 'Priya Sundaram',
     role: 'student',
-    email: 'priya.sundaram@student.sdbms.edu',
+    email: 'priya.sundaram@sssas.edu',
     phone: '+91 99002 66778',
     classSec: 'Class 10-A',
     rollNo: '10A-15',
@@ -92,6 +95,8 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09882',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 2,
+    badges: ['Science Champ', 'Dharma Star'],
     lastLogin: '2026-09-18T14:45:00Z',
     createdAt: '2024-08-01T10:15:00Z',
     gdprConsentDate: '2025-01-15T11:30:00Z',
@@ -99,10 +104,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-stud-03',
     username: 'student_rohit',
-    password: 'rohit123',
+    password: 'Sai Anandam',
     fullName: 'Rohit Varma',
     role: 'student',
-    email: 'rohit.varma@student.sdbms.edu',
+    email: 'rohit.varma@sssas.edu',
     phone: '+91 99003 77889',
     classSec: 'Class 10-A',
     rollNo: '10A-16',
@@ -110,6 +115,8 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09883',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 3,
+    badges: ['Values Leader', 'Top Orator'],
     lastLogin: '2026-09-17T09:20:00Z',
     createdAt: '2024-08-01T10:30:00Z',
     gdprConsentDate: '2025-01-16T12:00:00Z',
@@ -117,10 +124,10 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'u-stud-04',
     username: 'student_aditya',
-    password: 'adi123',
+    password: 'Sai Anandam',
     fullName: 'Aditya Narayan',
     role: 'student',
-    email: 'aditya.narayan@student.sdbms.edu',
+    email: 'aditya.narayan@sssas.edu',
     phone: '+91 99004 88990',
     classSec: 'Class 10-B',
     rollNo: '10B-01',
@@ -128,16 +135,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09884',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 1,
+    badges: ['Math Star', 'Prasanthi Scholar'],
     lastLogin: '2026-09-18T08:15:00Z',
     createdAt: '2024-08-02T10:00:00Z',
   },
   {
     id: 'u-stud-05',
     username: 'student_meera',
-    password: 'meera123',
+    password: 'Sai Anandam',
     fullName: 'Meera Nair',
     role: 'student',
-    email: 'meera.nair@student.sdbms.edu',
+    email: 'meera.nair@sssas.edu',
     phone: '+91 99005 99001',
     classSec: 'Class 10-B',
     rollNo: '10B-02',
@@ -145,16 +154,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09885',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 2,
+    badges: ['Science Champ'],
     lastLogin: '2026-09-17T11:40:00Z',
     createdAt: '2024-08-02T10:15:00Z',
   },
   {
     id: 'u-stud-06',
     username: 'student_deepak',
-    password: 'deepak123',
+    password: 'Sai Anandam',
     fullName: 'Deepak Sharma',
     role: 'student',
-    email: 'deepak.sharma@student.sdbms.edu',
+    email: 'deepak.sharma@sssas.edu',
     phone: '+91 99006 11223',
     classSec: 'Class 9-A',
     rollNo: '9A-04',
@@ -162,16 +173,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09886',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 1,
+    badges: ['Dharma Star'],
     lastLogin: '2026-09-16T15:10:00Z',
     createdAt: '2024-08-03T09:30:00Z',
   },
   {
     id: 'u-stud-07',
     username: 'student_sneha',
-    password: 'sneha123',
+    password: 'Sai Anandam',
     fullName: 'Sneha Patil',
     role: 'student',
-    email: 'sneha.patil@student.sdbms.edu',
+    email: 'sneha.patil@sssas.edu',
     phone: '+91 99007 22334',
     classSec: 'Class 9-A',
     rollNo: '9A-08',
@@ -179,16 +192,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09887',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 2,
+    badges: ['100% Attendance'],
     lastLogin: '2026-09-18T16:20:00Z',
     createdAt: '2024-08-03T10:00:00Z',
   },
   {
     id: 'u-stud-08',
     username: 'student_tanvi',
-    password: 'tanvi123',
+    password: 'Sai Anandam',
     fullName: 'Tanvi Deshmukh',
     role: 'student',
-    email: 'tanvi.deshmukh@student.sdbms.edu',
+    email: 'tanvi.deshmukh@sssas.edu',
     phone: '+91 99008 33445',
     classSec: 'Class 9-B',
     rollNo: '9B-05',
@@ -196,16 +211,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09888',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 1,
+    badges: ['Prasanthi Scholar', 'Values Leader'],
     lastLogin: '2026-09-18T12:05:00Z',
     createdAt: '2024-08-04T11:00:00Z',
   },
   {
     id: 'u-stud-09',
     username: 'student_sathya',
-    password: 'sathya123',
+    password: 'Sai Anandam',
     fullName: 'Sathya Prakash',
     role: 'student',
-    email: 'sathya.prakash@student.sdbms.edu',
+    email: 'sathya.prakash@sssas.edu',
     phone: '+91 99009 44556',
     classSec: 'Class 12-B',
     rollNo: '12B-01',
@@ -213,31 +230,18 @@ export const INITIAL_USERS: User[] = [
     penId: 'PEN-KA-2024-09889',
     status: 'active',
     twoFactorEnabled: false,
+    rank: 1,
+    badges: ['Prasanthi Scholar', 'Top Orator'],
     lastLogin: '2026-09-18T18:40:00Z',
     createdAt: '2024-08-04T11:30:00Z',
   },
   {
-    id: 'u-parent-01',
-    username: 'parent_sai',
-    password: 'parent123',
-    fullName: 'K. Venkat Rao',
-    role: 'parent',
-    email: 'venkat.rao.parent@gmail.com',
-    phone: '+91 98440 99881',
-    classSec: 'Class 10-A (Ward: Sai Anandam K.)',
-    status: 'active',
-    twoFactorEnabled: true,
-    lastLogin: '2026-09-18T19:30:00Z',
-    createdAt: '2024-08-05T14:00:00Z',
-    gdprConsentDate: '2025-01-15T15:00:00Z',
-  },
-  {
     id: 'u-acc-01',
     username: 'accountant',
-    password: 'acc123',
+    password: 'Sai Anandam',
     fullName: 'M. Sundaram',
     role: 'accountant',
-    email: 'bursar.accounts@sdbms.sai.edu',
+    email: 'accountant@sssas.edu',
     phone: '+91 97410 44556',
     status: 'active',
     twoFactorEnabled: true,
@@ -585,7 +589,7 @@ export const INITIAL_ANNOUNCEMENTS: Announcement[] = [
     content: 'Parents can now access instant cryptographic receipts for Term-2 fee receipts under the Fee & Transactions tab. Physical counters are replaced with 24/7 digital verification.',
     author: 'M. Sundaram',
     role: 'accountant',
-    targetAudience: 'parents',
+    targetAudience: 'all',
     priority: 'general',
     timestamp: '2026-09-15T10:00:00Z',
     readCount: 340,
@@ -685,15 +689,15 @@ export const INITIAL_CHAT_GROUPS: ChatGroup[] = [
     id: 'grp-class10a',
     name: '🎓 Class 10-A Academic Forum',
     description: 'Teacher announcements, assignment help, and classroom alerts.',
-    memberRoles: ['admin', 'teacher', 'student', 'parent'],
+    memberRoles: ['admin', 'teacher', 'student'],
     unreadCount: 1,
     lastMessage: 'Reminder: Mathematics problem set #5 submissions close tomorrow at 5 PM.',
   },
   {
     id: 'grp-parents',
-    name: '👨‍👩‍👧 Parent-Teacher Advisory Circle',
+    name: '👨‍🎓 Student & Faculty Advisory Circle',
     description: 'Institutional updates, health advisories, and student developmental progress.',
-    memberRoles: ['admin', 'teacher', 'parent'],
+    memberRoles: ['admin', 'teacher', 'student'],
     unreadCount: 0,
     lastMessage: 'Thank you all who attended the digital Open House session on Saturday.',
   },
@@ -815,6 +819,7 @@ export const INITIAL_LECTURES: Lecture[] = [
     duration: '45 mins',
     recordingType: 'video',
     videoUrl: 'https://www.youtube.com/embed/ZM8ECpBuQYE',
+    youtubeUrl: 'https://www.youtube.com/watch?v=ZM8ECpBuQYE',
     description: 'Detailed exposition of free body diagrams, inertial reference frames, friction coefficients, and conservation of linear momentum with real-world problems.',
     keyPoints: [
       'Newton\'s 1st, 2nd, and 3rd laws formulation and vector calculus application',
@@ -826,7 +831,46 @@ export const INITIAL_LECTURES: Lecture[] = [
       { id: 'res-1', name: 'Newton_Laws_Lecture_Slides_10A.pdf', size: '2.4 MB', type: 'PDF' },
       { id: 'res-2', name: 'Worked_Kinematics_Problems.pdf', size: '1.8 MB', type: 'PDF' }
     ],
-    completedBy: ['u-stud-01', 'u-stud-02'],
+    completedBy: ['u-stud-01'],
+    quizPassedBy: ['u-stud-01'],
+    quiz: {
+      passPercentage: 75,
+      questions: [
+        {
+          id: 'q-lec-1-1',
+          question: 'According to Newton\'s First Law, what is required to change an object\'s state of motion?',
+          options: [
+            'Continuous application of internal force',
+            'A non-zero net external unbalanced force',
+            'Zero friction at all times',
+            'A constant increase in mass'
+          ],
+          correctOption: 1,
+          explanation: 'Newton\'s First Law states an object continues in its state of rest or uniform motion unless acted upon by a net external force.'
+        },
+        {
+          id: 'q-lec-1-2',
+          question: 'What is the SI unit of momentum?',
+          options: ['kg·m/s²', 'N/m', 'kg·m/s', 'Joules'],
+          correctOption: 2,
+          explanation: 'Linear momentum p = mv has dimensions kg * m/s.'
+        },
+        {
+          id: 'q-lec-1-3',
+          question: 'If a crate is on an inclined plane of angle θ, what is the normal force component perpendicular to the incline?',
+          options: ['mg * sin(θ)', 'mg * cos(θ)', 'mg * tan(θ)', 'mg'],
+          correctOption: 1,
+          explanation: 'The component perpendicular to the surface is mg * cos(θ).'
+        },
+        {
+          id: 'q-lec-1-4',
+          question: 'In an elastic collision between two isolated bodies, which of the following is conserved?',
+          options: ['Only momentum', 'Only kinetic energy', 'Both momentum and kinetic energy', 'Neither'],
+          correctOption: 2,
+          explanation: 'In purely elastic collisions, total momentum and total mechanical kinetic energy are conserved.'
+        }
+      ]
+    },
     status: 'published'
   },
   {
@@ -840,6 +884,7 @@ export const INITIAL_LECTURES: Lecture[] = [
     duration: '50 mins',
     recordingType: 'video',
     videoUrl: 'https://www.youtube.com/embed/WUvTyaaNkzM',
+    youtubeUrl: 'https://www.youtube.com/watch?v=WUvTyaaNkzM',
     description: 'Understanding the geometric interpretation of the derivative, tangent slopes, velocity as rate of change, and second derivative tests for optimization.',
     keyPoints: [
       'Limits approach and first-principle derivation of power rule',
@@ -851,7 +896,46 @@ export const INITIAL_LECTURES: Lecture[] = [
       { id: 'res-3', name: 'Calculus_Formula_Sheet_Term2.pdf', size: '1.2 MB', type: 'PDF' },
       { id: 'res-4', name: 'Optimization_Word_Problems.pdf', size: '3.1 MB', type: 'PDF' }
     ],
-    completedBy: ['u-stud-01'],
+    completedBy: [],
+    quizPassedBy: [],
+    quiz: {
+      passPercentage: 75,
+      questions: [
+        {
+          id: 'q-lec-2-1',
+          question: 'What does f\'(x) = 0 indicate at a smooth continuous point?',
+          options: [
+            'A vertical asymptote',
+            'A stationary or critical point where the tangent line is horizontal',
+            'The function is undefined',
+            'A discontinuity in the domain'
+          ],
+          correctOption: 1,
+          explanation: 'A zero derivative signifies a stationary point with horizontal tangent.'
+        },
+        {
+          id: 'q-lec-2-2',
+          question: 'If f\'(c) = 0 and f\'\'(c) > 0, what does the Second Derivative Test conclude about x = c?',
+          options: ['Local Maximum', 'Local Minimum', 'Saddle Point', 'Inconclusive'],
+          correctOption: 1,
+          explanation: 'When f\'\'(c) > 0, the curve is concave up, indicating a local minimum.'
+        },
+        {
+          id: 'q-lec-2-3',
+          question: 'What is the derivative of f(x) = 3x² + 5x - 7 with respect to x?',
+          options: ['6x + 5', '3x + 5', '6x² + 5', '6x'],
+          correctOption: 0,
+          explanation: 'Applying the power rule: d/dx(3x²) = 6x, d/dx(5x) = 5.'
+        },
+        {
+          id: 'q-lec-2-4',
+          question: 'Geometrically, what does the first derivative of a function represent?',
+          options: ['Area under the curve', 'Slope of the tangent line to the curve', 'Perimeter of graph', 'X-intercept'],
+          correctOption: 1,
+          explanation: 'The derivative at a point is the instantaneous rate of change and slope of the tangent.'
+        }
+      ]
+    },
     status: 'published'
   },
   {
@@ -863,7 +947,9 @@ export const INITIAL_LECTURES: Lecture[] = [
     teacherName: 'Dr. K. Murali Krishna',
     date: '2026-09-16',
     duration: '40 mins',
-    recordingType: 'presentation',
+    recordingType: 'video',
+    videoUrl: 'https://www.youtube.com/embed/QXT4OVM4vXI',
+    youtubeUrl: 'https://www.youtube.com/watch?v=QXT4OVM4vXI',
     description: 'Electronegativity gradients, VSEPR 3D geometries, sp3/sp2/sp hybridization, and dipole moments in polyatomic molecules.',
     keyPoints: [
       'Lewis dot structures and formal charge minimization',
@@ -873,7 +959,46 @@ export const INITIAL_LECTURES: Lecture[] = [
     resources: [
       { id: 'res-5', name: 'VSEPR_3D_Geometry_Guide.pdf', size: '4.5 MB', type: 'PDF' }
     ],
-    completedBy: ['u-stud-02'],
+    completedBy: [],
+    quizPassedBy: [],
+    quiz: {
+      passPercentage: 75,
+      questions: [
+        {
+          id: 'q-lec-3-1',
+          question: 'What is the predicted bond angle in a tetrahedral molecule like Methane (CH4)?',
+          options: ['90°', '120°', '109.5°', '180°'],
+          correctOption: 2,
+          explanation: 'Four equivalent sp3 hybridized bonds repel equally into 109.5° angles.'
+        },
+        {
+          id: 'q-lec-3-2',
+          question: 'Which type of hybridization occurs in Carbon atoms of Ethene (C2H4) containing a double bond?',
+          options: ['sp', 'sp2', 'sp3', 'sp3d'],
+          correctOption: 1,
+          explanation: 'Carbon with one double bond and two single bonds forms sp2 hybridization.'
+        },
+        {
+          id: 'q-lec-3-3',
+          question: 'Why is Water (H2O) a bent molecule rather than linear?',
+          options: [
+            'Carbon-Oxygen attraction',
+            'Two lone pairs of electrons on Oxygen cause greater electron repulsion',
+            'It is non-polar',
+            'Hydrogen atoms repel each other'
+          ],
+          correctOption: 1,
+          explanation: 'Lone pair-lone pair repulsion compresses the H-O-H bond angle to 104.5°.'
+        },
+        {
+          id: 'q-lec-3-4',
+          question: 'Which molecule has a net zero dipole moment due to symmetric geometry?',
+          options: ['H2O', 'NH3', 'CO2', 'HCl'],
+          correctOption: 2,
+          explanation: 'CO2 is linear, so opposing C=O bond dipole vectors cancel out completely.'
+        }
+      ]
+    },
     status: 'published'
   },
   {
@@ -887,6 +1012,7 @@ export const INITIAL_LECTURES: Lecture[] = [
     duration: '55 mins',
     recordingType: 'video',
     videoUrl: 'https://www.youtube.com/embed/shs0KM3wKv8',
+    youtubeUrl: 'https://www.youtube.com/watch?v=shs0KM3wKv8',
     description: 'Internal mechanics of associative arrays, hash functions, separate chaining vs open addressing, and average O(1) retrieval proofs.',
     keyPoints: [
       'Hash code calculation, modular arithmetic, and uniform distribution',
@@ -896,8 +1022,121 @@ export const INITIAL_LECTURES: Lecture[] = [
     resources: [
       { id: 'res-6', name: 'HashTable_Implementation_Code.zip', size: '540 KB', type: 'ZIP' }
     ],
-    completedBy: ['u-stud-01', 'u-stud-03'],
+    completedBy: [],
+    quizPassedBy: [],
+    quiz: {
+      passPercentage: 75,
+      questions: [
+        {
+          id: 'q-lec-4-1',
+          question: 'What is the average time complexity for searching an element in a well-designed hash table?',
+          options: ['O(log N)', 'O(N)', 'O(1)', 'O(N log N)'],
+          correctOption: 2,
+          explanation: 'Hash functions calculate direct array bucket indices in constant O(1) time.'
+        },
+        {
+          id: 'q-lec-4-2',
+          question: 'What is the technique where colliding elements are stored in a linked list at the same bucket?',
+          options: ['Linear Probing', 'Separate Chaining', 'Double Hashing', 'Binary Partitioning'],
+          correctOption: 1,
+          explanation: 'Separate chaining stores collided records in a linked list at that hash table slot.'
+        },
+        {
+          id: 'q-lec-4-3',
+          question: 'When a hash table has an extremely high load factor and poor hash function, worst-case search degrades to:',
+          options: ['O(1)', 'O(log N)', 'O(N)', 'O(N²)'],
+          correctOption: 2,
+          explanation: 'If all keys hash to a single bucket, search becomes a linear scan of length N.'
+        },
+        {
+          id: 'q-lec-4-4',
+          question: 'What parameter determines when a dynamic hash table triggers rehashing to a larger bucket array?',
+          options: ['Load factor threshold', 'Total memory RAM', 'Processor clock speed', 'Key string length'],
+          correctOption: 0,
+          explanation: 'The load factor (number of elements / number of buckets) triggers auto-resizing.'
+        }
+      ]
+    },
     status: 'published'
+  }
+];
+
+export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
+  {
+    id: 'att-2026-09-18-10A',
+    date: '2026-09-18',
+    classSec: 'Class 10-A',
+    markedBy: 'Prof. Ananya Sharma',
+    markedById: 'u-teach-01',
+    timestamp: '2026-09-18T08:30:00Z',
+    records: [
+      { studentId: 'u-stud-01', studentName: 'Sai Anandam K.', rollNo: '10A-14', status: 'present', remarks: 'On time, active participation' },
+      { studentId: 'u-stud-02', studentName: 'Priya Sundaram', rollNo: '10A-15', status: 'present', remarks: 'On time' },
+      { studentId: 'u-stud-03', studentName: 'Rohit Varma', rollNo: '10A-16', status: 'late', remarks: 'Late by 10 mins (hostel bus delay)' },
+    ]
+  },
+  {
+    id: 'att-2026-09-17-10A',
+    date: '2026-09-17',
+    classSec: 'Class 10-A',
+    markedBy: 'Prof. Ananya Sharma',
+    markedById: 'u-teach-01',
+    timestamp: '2026-09-17T08:30:00Z',
+    records: [
+      { studentId: 'u-stud-01', studentName: 'Sai Anandam K.', rollNo: '10A-14', status: 'present' },
+      { studentId: 'u-stud-02', studentName: 'Priya Sundaram', rollNo: '10A-15', status: 'present' },
+      { studentId: 'u-stud-03', studentName: 'Rohit Varma', rollNo: '10A-16', status: 'present' },
+    ]
+  },
+  {
+    id: 'att-2026-09-16-10A',
+    date: '2026-09-16',
+    classSec: 'Class 10-A',
+    markedBy: 'Prof. Ananya Sharma',
+    markedById: 'u-teach-01',
+    timestamp: '2026-09-16T08:30:00Z',
+    records: [
+      { studentId: 'u-stud-01', studentName: 'Sai Anandam K.', rollNo: '10A-14', status: 'present' },
+      { studentId: 'u-stud-02', studentName: 'Priya Sundaram', rollNo: '10A-15', status: 'excused', remarks: 'Approved medical appointment' },
+      { studentId: 'u-stud-03', studentName: 'Rohit Varma', rollNo: '10A-16', status: 'present' },
+    ]
+  },
+  {
+    id: 'att-2026-09-15-10A',
+    date: '2026-09-15',
+    classSec: 'Class 10-A',
+    markedBy: 'Prof. Ananya Sharma',
+    markedById: 'u-teach-01',
+    timestamp: '2026-09-15T08:30:00Z',
+    records: [
+      { studentId: 'u-stud-01', studentName: 'Sai Anandam K.', rollNo: '10A-14', status: 'present' },
+      { studentId: 'u-stud-02', studentName: 'Priya Sundaram', rollNo: '10A-15', status: 'present' },
+      { studentId: 'u-stud-03', studentName: 'Rohit Varma', rollNo: '10A-16', status: 'present' },
+    ]
+  },
+  {
+    id: 'att-2026-09-18-10B',
+    date: '2026-09-18',
+    classSec: 'Class 10-B',
+    markedBy: 'Dr. K. Murali Krishna',
+    markedById: 'u-teach-02',
+    timestamp: '2026-09-18T08:35:00Z',
+    records: [
+      { studentId: 'u-stud-04', studentName: 'Aditya Narayan', rollNo: '10B-01', status: 'present' },
+      { studentId: 'u-stud-05', studentName: 'Meera Nair', rollNo: '10B-02', status: 'present' },
+    ]
+  },
+  {
+    id: 'att-2026-09-18-9A',
+    date: '2026-09-18',
+    classSec: 'Class 9-A',
+    markedBy: 'Dr. S. K. Ramanathan',
+    markedById: 'u-admin-01',
+    timestamp: '2026-09-18T08:40:00Z',
+    records: [
+      { studentId: 'u-stud-06', studentName: 'Deepak Sharma', rollNo: '9A-04', status: 'present' },
+      { studentId: 'u-stud-07', studentName: 'Sneha Patil', rollNo: '9A-08', status: 'present' },
+    ]
   }
 ];
 
@@ -919,6 +1158,10 @@ export const INITIAL_ASSESSMENTS: Assessment[] = [
       'Show all free body diagrams and intermediate algebraic steps clearly.',
       'State SI units for every calculated quantity (m/s, N, Joules).',
       'Submit your typed solution or uploaded scan via this digital portal.'
+    ],
+    attachments: [
+      { id: 'att-res-1', name: 'Physics_Kinematics_Reference_Guide.pdf', size: '1.4 MB', type: 'PDF' },
+      { id: 'att-res-2', name: 'Formula_Sheet_Mechanics_2026.pdf', size: '820 KB', type: 'PDF' }
     ],
     questions: [
       {

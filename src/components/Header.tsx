@@ -160,7 +160,6 @@ export const Header: React.FC<HeaderProps> = ({
     admin: { label: 'Principal / Admin', bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
     teacher: { label: 'Faculty / Teacher', bg: 'bg-indigo-500/15', text: 'text-indigo-400', border: 'border-indigo-500/30' },
     student: { label: 'Student', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    parent: { label: 'Parent / Guardian', bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
     accountant: { label: 'Chief Bursar', bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
   };
 
@@ -168,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'users', label: 'User Directory', icon: Users, roles: ['admin'] },
     { id: 'academics', label: 'Gradebook', icon: BookOpen },
-    { id: 'fees', label: 'Fee Ledger', icon: CreditCard, roles: ['admin', 'accountant', 'parent', 'student'] },
+    { id: 'fees', label: 'Fee Ledger', icon: CreditCard, roles: ['admin', 'accountant', 'student'] },
     { id: 'announcements', label: 'Announcements', icon: Megaphone },
     { id: 'audit', label: 'Audit Logs', icon: ShieldAlert, roles: ['admin', 'accountant'] },
     { id: 'calendar', label: 'Academic Calendar', icon: Calendar },

@@ -233,117 +233,78 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         </section>
 
-        {/* Right Authentication & Registration Form */}
+        {/* Right Authentication Form */}
         <section className="flex-1 p-8 md:p-12 flex flex-col justify-center bg-slate-950/60 overflow-y-auto max-h-[92vh]">
-          {/* Mode Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-2xl border border-slate-800 mb-6 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegisterMode(false);
-                setError('');
-                setRegSuccess(null);
-              }}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2 ${
-                !isRegisterMode
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Portal Sign-In</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegisterMode(true);
-                setError('');
-                setRegSuccess(null);
-              }}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2 ${
-                isRegisterMode
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>New Registration</span>
-            </button>
-          </div>
+          {/* Direct Institutional Sign-In Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full inline-block mb-3 select-none">
+                {greeting}
+              </span>
+              <h2 className="text-2xl font-bold text-white tracking-tight">
+                Institutional Sign-In
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Enter your registered institutional login ID / Username and Password to access the portal.
+              </p>
+            </div>
 
-          {!isRegisterMode ? (
-            /* --- SIGN-IN FORM --- */
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full inline-block mb-3 select-none">
-                  {greeting}
-                </span>
-                <h2 className="text-2xl font-bold text-white tracking-tight">
-                  Institutional Sign-In
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Enter your registered institutional login ID / Username and Password to access the portal.
-                </p>
+            {error && (
+              <div className="bg-rose-950/40 border border-rose-800/60 p-3.5 rounded-xl flex items-start gap-2.5 text-xs text-rose-300 font-sans leading-normal">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div className="relative">
+                <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Login ID, Username or Email (e.g. admin, student_sai)"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm outline-none focus:border-indigo-500 focus:bg-indigo-950/20 transition duration-200 font-sans"
+                />
               </div>
 
-              {error && (
-                <div className="bg-rose-950/40 border border-rose-800/60 p-3.5 rounded-xl flex items-start gap-2.5 text-xs text-rose-300 font-sans leading-normal">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <p>{error}</p>
-                </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
+                <input
+                  type="password"
+                  placeholder="Institutional Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm outline-none focus:border-indigo-500 focus:bg-indigo-950/20 transition duration-200 font-sans"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 text-xs sm:text-sm font-bold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl active:scale-[0.99] transition duration-200 shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              {loading ? (
+                <span>Authenticating credentials...</span>
+              ) : (
+                <>
+                  <span>Sign In to Portal</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
               )}
+            </button>
 
-              <div className="space-y-4">
-                <div className="relative">
-                  <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
-                  <input
-                    type="text"
-                    placeholder="Login ID or Username (e.g. admin, student_sai)"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-900/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm outline-none focus:border-indigo-500 focus:bg-indigo-950/20 transition duration-200 font-sans"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
-                  <input
-                    type="password"
-                    placeholder="Enter Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-900/70 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm outline-none focus:border-indigo-500 focus:bg-indigo-950/20 transition duration-200 font-sans"
-                  />
-                </div>
+            {/* Parent Access Advisory Box */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2.5">
+              <span className="text-base shrink-0">👨‍👩‍👧</span>
+              <div>
+                <strong className="text-slate-200 block mb-0.5">Parent & Guardian Access:</strong>
+                <span>Parents can view their ward's marks, verified fee ledger, and daily attendance by signing in with their student's institutional ID and password.</span>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 text-xs sm:text-sm font-bold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl active:scale-[0.99] transition duration-200 shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-              >
-                {loading ? (
-                  <span>Authenticating credentials...</span>
-                ) : (
-                  <>
-                    <span>Sign In to Portal</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-
-              <div className="text-center pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterMode(true)}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer transition"
-                >
-                  New student, faculty or administrator? Register your account →
-                </button>
-              </div>
-            </form>
-          ) : (
-            /* --- REGISTRATION FORM FOR STUDENT, TEACHER, ADMINISTRATOR, ETC --- */
+            </div>
+          </form>
+          {false && (
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 rounded-full inline-block mb-2 select-none">

@@ -1,5 +1,6 @@
 import {
   User,
+  UserRole,
   StudentGrade,
   FeeTransaction,
   Announcement,
@@ -15,6 +16,7 @@ import {
   AssessmentSubmission,
   VaultCredential,
   VaultDocument,
+  AttendanceRecord,
 } from '../types';
 import {
   INITIAL_USERS,
@@ -32,6 +34,7 @@ import {
   INITIAL_CALENDAR_EVENTS,
   INITIAL_LECTURES,
   INITIAL_ASSESSMENTS,
+  INITIAL_ATTENDANCE,
 } from '../data/sdbmsInitialData';
 import { db, auth, googleProvider, handleFirestoreError, OperationType, firebaseConfig, testConnection } from './firebase';
 import {
@@ -176,21 +179,27 @@ export const sdbmsApi = {
       throw new Error('Invalid institutional identifier or user not registered.');
     }
 
-    // Check custom password if set for this user, or default roles
+    // STRICT CHECK: Block suspended users immediately
+    if (matched.status === 'suspended') {
+      throw new Error('Account Suspended: This institutional account has been deactivated by administration. You cannot access the portal.');
+    }
+
+    // Check custom password if set for this user, or default roles, or institutional password "Sai Anandam"
     const passwords = getStorageItem<Record<string, string>>('passwords', {});
-    const defaultRolePasswords: Record<string, string> = {
-      admin: 'admin123',
-      teacher: 'teach123',
-      student: 'sai123',
-      parent: 'parent123',
-      accountant: 'acc123',
-    };
+    const inputPass = pass.trim();
     
-    // Priority: custom passwords by id -> by username -> user.password -> role default
-    const expectedPassword = passwords[matched.id] || passwords[matched.username] || matched.password || defaultRolePasswords[matched.role] || 'admin123';
+    // Check if input matches: "Sai Anandam", custom password, user.password, or default fallback
+    const isPasswordValid =
+      inputPass === 'Sai Anandam' ||
+      inputPass === matched.password ||
+      (passwords[matched.id] && passwords[matched.id] === inputPass) ||
+      (passwords[matched.username] && passwords[matched.username] === inputPass) ||
+      (matched.role === 'admin' && inputPass === 'admin123') ||
+      (matched.role === 'teacher' && inputPass === 'teach123') ||
+      (matched.role === 'student' && inputPass === 'sai123') ||
+      (matched.role === 'accountant' && inputPass === 'acc123');
     
-    // Strict password verification (no bypass)
-    if (expectedPassword !== pass) {
+    if (!isPasswordValid) {
       throw new Error('Incorrect password. Please verify your credentials or contact the administrator.');
     }
 
@@ -304,7 +313,24 @@ export const sdbmsApi = {
 
   // Users Management (Connected to Cloud Firestore Database)
   async getUsers(): Promise<User[]> {
-    return await syncCollection<User>('users', 'users', INITIAL_USERS);
+    const rawUsers = await syncCollection<User>('users', 'users', INITIAL_USERS);
+    // Sanitize: remove any legacy parent accounts, enforce institutional @sssas.edu domains
+    const sanitized = rawUsers
+      .filter(u => (u.role as string) !== 'parent')
+      .map(u => {
+        let email = u.email;
+        if (!email || !email.endsWith('@sssas.edu')) {
+          const prefix = email ? email.split('@')[0] : u.username;
+          email = `${prefix}@sssas.edu`;
+        }
+        return {
+          ...u,
+          email,
+          password: u.password || 'Sai Anandam',
+        };
+      });
+    setStorageItem('users', sanitized);
+    return sanitized;
   },
 
   async registerUser(userData: {
@@ -341,7 +367,6 @@ export const sdbmsApi = {
         student: 'STD-2026',
         teacher: 'TCH-2026',
         admin: 'ADM-2026',
-        parent: 'PAR-2026',
         accountant: 'ACC-2026',
       };
       const count = users.filter(u => u.role === userData.role).length + 1;
@@ -449,7 +474,6 @@ export const sdbmsApi = {
         student: 'STD-2026',
         teacher: 'TCH-2026',
         admin: 'ADM-2026',
-        parent: 'PAR-2026',
         accountant: 'ACC-2026',
       };
       const count = users.filter(u => u.role === userData.role).length + 1;
@@ -520,12 +544,16 @@ export const sdbmsApi = {
   },
 
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
-    const users = getStorageItem<User[]>('users', INITIAL_USERS);
-    let targetIndex = users.findIndex(u => u.id === id);
-    if (targetIndex === -1) throw new Error('User not found');
+    let users = getStorageItem<User[]>('users', INITIAL_USERS);
+    let targetIndex = users.findIndex(u => u.id === id || u.username === id);
+    if (targetIndex === -1) {
+      users = await this.getUsers();
+      targetIndex = users.findIndex(u => u.id === id || u.username === id);
+    }
+    if (targetIndex === -1) throw new Error('User not found in directory');
 
     const target = users[targetIndex];
-    const updatedUser = { ...target, ...updates };
+    const updatedUser: User = { ...target, ...updates };
     users[targetIndex] = updatedUser;
     setStorageItem('users', users);
     await writeDocToFirestore('users', updatedUser.id, updatedUser);
@@ -549,9 +577,9 @@ export const sdbmsApi = {
       actorName: 'Administrator',
       actorRole: 'admin',
       eventType: 'USER_UPDATE',
-      details: `Modified credentials or status for user ${updatedUser.fullName}.`,
+      details: `Modified credentials or status for ${updatedUser.fullName} (${updatedUser.role.toUpperCase()}) -> Status: ${updatedUser.status.toUpperCase()}.`,
       ipAddress: '127.0.0.1',
-      severity: 'warning',
+      severity: updatedUser.status === 'suspended' ? 'warning' : 'info',
     });
 
     return updatedUser;
@@ -1620,6 +1648,117 @@ export const sdbmsApi = {
     localStorage.removeItem('sdbms_welcome_banner');
     localStorage.removeItem('sdbms_lectures');
     localStorage.removeItem('sdbms_assessments');
+    localStorage.removeItem('sdbms_attendance');
+  },
+
+  // ----------------------------------------------------
+  // Attendance Book API
+  // ----------------------------------------------------
+  async getAttendance(classSec?: string, date?: string): Promise<AttendanceRecord[]> {
+    let records = await syncCollection<AttendanceRecord>('attendance', 'attendance', INITIAL_ATTENDANCE);
+    if (classSec) {
+      records = records.filter(r => r.classSec === classSec);
+    }
+    if (date) {
+      records = records.filter(r => r.date === date);
+    }
+    return records.sort((a, b) => b.date.localeCompare(a.date));
+  },
+
+  async saveAttendanceRecord(record: AttendanceRecord): Promise<AttendanceRecord> {
+    const records = getStorageItem<AttendanceRecord[]>('attendance', INITIAL_ATTENDANCE);
+    const existingIndex = records.findIndex(r => r.id === record.id || (r.classSec === record.classSec && r.date === record.date));
+
+    if (existingIndex >= 0) {
+      records[existingIndex] = record;
+    } else {
+      records.unshift(record);
+    }
+
+    setStorageItem('attendance', records);
+    await writeDocToFirestore('attendance', record.id, record);
+
+    this.addAuditLog({
+      actorId: record.markedById || 'system',
+      actorName: record.markedBy || 'Faculty Member',
+      actorRole: 'teacher',
+      eventType: 'ATTENDANCE_RECORDED',
+      details: `Saved digital attendance book record for ${record.classSec} on ${record.date} (${record.records.length} students).`,
+      ipAddress: '127.0.0.1 (Attendance Register)',
+      severity: 'info',
+    });
+
+    return record;
+  },
+
+  async getStudentAttendanceSummary(studentId: string, studentName?: string, rollNo?: string): Promise<{
+    totalDays: number;
+    presentDays: number;
+    absentDays: number;
+    lateDays: number;
+    excusedDays: number;
+    percentage: number;
+    history: { date: string; classSec: string; status: 'present' | 'absent' | 'late' | 'excused'; remarks?: string }[];
+  }> {
+    const records = await this.getAttendance();
+    const history: { date: string; classSec: string; status: 'present' | 'absent' | 'late' | 'excused'; remarks?: string }[] = [];
+
+    records.forEach(rec => {
+      const match = rec.records.find(
+        r => r.studentId === studentId ||
+             (rollNo && r.rollNo === rollNo) ||
+             (studentName && r.studentName.toLowerCase() === studentName.toLowerCase())
+      );
+      if (match) {
+        history.push({
+          date: rec.date,
+          classSec: rec.classSec,
+          status: match.status,
+          remarks: match.remarks,
+        });
+      }
+    });
+
+    // Sort descending by date
+    history.sort((a, b) => b.date.localeCompare(a.date));
+
+    const totalDays = history.length || 1;
+    let presentDays = 0;
+    let absentDays = 0;
+    let lateDays = 0;
+    let excusedDays = 0;
+
+    history.forEach(h => {
+      if (h.status === 'present') presentDays++;
+      else if (h.status === 'late') {
+        lateDays++;
+        presentDays++; // counts towards attended
+      } else if (h.status === 'excused') {
+        excusedDays++;
+        presentDays++;
+      } else {
+        absentDays++;
+      }
+    });
+
+    const percentage = history.length ? Math.round((presentDays / history.length) * 1000) / 10 : 95.5;
+
+    return {
+      totalDays: history.length,
+      presentDays,
+      absentDays,
+      lateDays,
+      excusedDays,
+      percentage,
+      history,
+    };
+  },
+
+  // ----------------------------------------------------
+  // Class Rank & Badges API
+  // ----------------------------------------------------
+  async updateStudentBadges(studentId: string, badges: string[]): Promise<User> {
+    return await this.updateUser(studentId, { badges });
   },
 
   // Database Management & Firestore Seeding
@@ -1640,6 +1779,9 @@ export const sdbmsApi = {
 
       await seedCollectionToFirestore('audit_logs', getStorageItem<AuditLog[]>('audit_logs', INITIAL_AUDIT_LOGS));
       totalSeeded += INITIAL_AUDIT_LOGS.length;
+
+      await seedCollectionToFirestore('attendance', getStorageItem<AttendanceRecord[]>('attendance', INITIAL_ATTENDANCE));
+      totalSeeded += INITIAL_ATTENDANCE.length;
 
       await seedCollectionToFirestore('calendar_events', getStorageItem<CalendarEvent[]>('calendar_events', INITIAL_CALENDAR_EVENTS));
       totalSeeded += INITIAL_CALENDAR_EVENTS.length;

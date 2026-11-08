@@ -39,11 +39,11 @@ export const FeeLedgerView: React.FC<FeeLedgerViewProps> = ({
   const canRecord = ['admin', 'accountant'].includes(currentUser.role);
 
   const filteredTx = transactions.filter((t) => {
-    if (currentUser.role === 'student' && !t.studentName.includes('Sai') && t.studentId !== currentUser.id) {
-      return false;
-    }
-    if (currentUser.role === 'parent' && !t.studentName.includes('Sai')) {
-      return false;
+    if (currentUser.role === 'student') {
+      const matches =
+        t.studentId === currentUser.id ||
+        t.studentName.trim().toLowerCase() === currentUser.fullName.trim().toLowerCase();
+      if (!matches) return false;
     }
     return (
       t.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||

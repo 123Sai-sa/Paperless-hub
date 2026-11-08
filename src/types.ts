@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'accountant';
+export type UserRole = 'admin' | 'teacher' | 'student' | 'accountant';
 
 export interface User {
   id: string;
@@ -19,6 +19,8 @@ export interface User {
   gdprConsentDate?: string;
   password?: string;
   themePreference?: 'dark' | 'light';
+  badges?: string[];
+  rank?: number;
 }
 
 export interface AcademicSubject {
@@ -50,8 +52,27 @@ export interface StudentGrade {
   gpa: number;
   grade: 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' | 'F';
   status: 'pass' | 'fail';
+  rank?: number;
   remarks?: string;
   lastUpdated: string;
+}
+
+export interface AttendanceStudentEntry {
+  studentId: string;
+  studentName: string;
+  rollNo: string;
+  status: 'present' | 'absent' | 'late' | 'excused';
+  remarks?: string;
+}
+
+export interface AttendanceRecord {
+  id: string; // e.g. att-2026-09-19-10A
+  date: string; // YYYY-MM-DD
+  classSec: string;
+  markedBy: string;
+  markedById: string;
+  records: AttendanceStudentEntry[];
+  timestamp: string;
 }
 
 export interface FeeTransaction {
@@ -76,7 +97,7 @@ export interface Announcement {
   content: string;
   author: string;
   role: UserRole;
-  targetAudience: 'all' | 'students' | 'parents' | 'teachers';
+  targetAudience: 'all' | 'students' | 'teachers';
   priority: 'critical' | 'academic' | 'urgent' | 'general';
   timestamp: string;
   readCount: number;
@@ -98,11 +119,13 @@ export interface AuditLog {
     | 'CREDENTIALS_RESET'
     | 'GRADE_UPDATE'
     | 'FEE_RECORDED'
+    | 'ATTENDANCE_RECORDED'
     | 'GDPR_EXPORT'
     | 'GDPR_CONSENT'
     | 'SETTINGS_UPDATE'
     | 'BROADCAST_ALERT'
     | 'LECTURE_CREATE'
+    | 'LECTURE_QUIZ_PASS'
     | 'ASSESSMENT_CREATE'
     | 'ASSESSMENT_SUBMIT'
     | 'ASSESSMENT_GRADE'
@@ -182,6 +205,23 @@ export interface LectureResource {
   url?: string;
 }
 
+export interface LectureQuizQuestion {
+  id: string | number;
+  question: string;
+  options: string[];
+  correctOption?: number;
+  correctAnswerIndex?: number;
+  explanation?: string;
+}
+
+export interface LectureQuiz {
+  id?: string;
+  lectureId?: string;
+  questions: LectureQuizQuestion[];
+  passPercentage?: number;
+  passThreshold?: number;
+}
+
 export interface Lecture {
   id: string;
   title: string;
@@ -192,17 +232,28 @@ export interface Lecture {
   date: string;
   duration: string;
   recordingType: 'video' | 'live' | 'presentation' | 'audio';
-  videoUrl?: string;
+  videoUrl?: string; // YouTube video link or embed
+  youtubeUrl?: string;
   description: string;
   keyPoints: string[];
   resources: LectureResource[];
   completedBy: string[]; // student IDs who finished/viewed
+  quiz?: LectureQuiz;
+  quizPassedBy?: string[]; // student IDs who passed the topic quiz
   status: 'published' | 'draft';
 }
 
 // ----------------------------------------------------
 // Assessments & Homework Assignments Models
 // ----------------------------------------------------
+export interface AssessmentAttachment {
+  id: string;
+  name: string;
+  url?: string;
+  size?: string;
+  type?: string;
+}
+
 export interface AssessmentQuestion {
   id: string;
   question: string;
@@ -241,6 +292,7 @@ export interface Assessment {
   assignedDate: string;
   description: string;
   instructions: string[];
+  attachments?: AssessmentAttachment[];
   questions?: AssessmentQuestion[];
   submissions: AssessmentSubmission[];
   status: 'active' | 'closed' | 'draft';
@@ -254,7 +306,7 @@ export type NavigationTab =
   | 'dashboard'
   | 'lectures'
   | 'assignments'
-  | 'private-vault'
+  | 'attendance'
   | 'academics'
   | 'users'
   | 'fees'
@@ -263,6 +315,7 @@ export type NavigationTab =
   | 'calendar'
   | 'chat'
   | 'forum'
+  | 'private-vault'
   | 'ai-advisor'
   | 'ai-diagnostic'
   | 'settings';

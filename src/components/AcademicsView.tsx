@@ -111,14 +111,13 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
   // Filtered grades based on role, class, and search
   const displayedGrades = useMemo(() => {
     return grades.filter((g) => {
-      // If student, restrict to their record
+      // If student, strictly restrict to their own record only
       if (currentUser.role === 'student') {
-        const matchesUser = g.studentId === currentUser.id || g.studentName.toLowerCase() === currentUser.fullName.toLowerCase() || g.studentName.includes('Sai');
+        const matchesUser =
+          g.studentId === currentUser.id ||
+          (currentUser.rollNo && g.rollNo === currentUser.rollNo) ||
+          g.studentName.trim().toLowerCase() === currentUser.fullName.trim().toLowerCase();
         if (!matchesUser) return false;
-      }
-      // If parent, restrict to their ward
-      if (currentUser.role === 'parent' && !g.studentName.includes('Sai')) {
-        return false;
       }
 
       // Class filter
@@ -149,7 +148,8 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
   // Performance calculations
   const calculateDerived = (scores: Record<string, number>) => {
     const total = Object.values(scores).reduce((a, b) => a + Number(b || 0), 0);
-    const max = subjects.length * 100;
+    const subjectCount = Math.max(Object.keys(scores).length, 1);
+    const max = subjectCount * 100;
     const percentage = Number(((total / max) * 100).toFixed(2));
     const gpa = Number(((percentage / 100) * 10).toFixed(1));
 
@@ -208,6 +208,45 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
     if (!editingGrade) return;
     const scoreVal = Math.min(100, Math.max(0, val));
     const newScoresObj = { ...editingGrade.scores, [subId]: scoreVal };
+    const derived = calculateDerived(newScoresObj);
+    setEditingGrade({
+      ...editingGrade,
+      scores: newScoresObj,
+      totalMarks: derived.total,
+      maxPossible: derived.max,
+      percentage: derived.percentage,
+      gpa: derived.gpa,
+      grade: derived.grade,
+      status: derived.status,
+    });
+  };
+
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubScore, setNewSubScore] = useState(80);
+
+  const handleAddSubjectToEditingGrade = () => {
+    if (!editingGrade || !newSubName.trim()) return;
+    const cleanKey = `sub-custom-${newSubName.trim().toLowerCase().replace(/\s+/g, '-')}`;
+    const newScoresObj = { ...editingGrade.scores, [cleanKey]: Math.min(100, Math.max(0, newSubScore)) };
+    const derived = calculateDerived(newScoresObj);
+    setEditingGrade({
+      ...editingGrade,
+      scores: newScoresObj,
+      totalMarks: derived.total,
+      maxPossible: derived.max,
+      percentage: derived.percentage,
+      gpa: derived.gpa,
+      grade: derived.grade,
+      status: derived.status,
+    });
+    setNewSubName('');
+    setNewSubScore(80);
+  };
+
+  const handleRemoveSubjectFromEditingGrade = (subKey: string) => {
+    if (!editingGrade) return;
+    const newScoresObj = { ...editingGrade.scores };
+    delete newScoresObj[subKey];
     const derived = calculateDerived(newScoresObj);
     setEditingGrade({
       ...editingGrade,
@@ -748,8 +787,25 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
                       {g.rollNo}
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-bold text-white text-sm">{g.studentName}</div>
-                      <div className="text-[10px] text-amber-400/90 font-medium">{g.classSec}</div>
+                      {isTeacherOrAdmin ? (
+                        <button
+                          type="button"
+                          onClick={() => setEditingGrade(g)}
+                          className="text-left group cursor-pointer"
+                          title="Click to edit marks & subjects for this student"
+                        >
+                          <div className="font-bold text-white text-sm group-hover:text-amber-400 flex items-center gap-1.5 transition">
+                            <span>{g.studentName}</span>
+                            <Edit3 className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 transition" />
+                          </div>
+                          <div className="text-[10px] text-amber-400/90 font-medium">{g.classSec} • Click name to edit marks</div>
+                        </button>
+                      ) : (
+                        <div>
+                          <div className="font-bold text-white text-sm">{g.studentName}</div>
+                          <div className="text-[10px] text-amber-400/90 font-medium">{g.classSec}</div>
+                        </div>
+                      )}
                     </td>
 
                     {subjects.map((sub) => {
@@ -1050,39 +1106,124 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
         </div>
       )}
 
-      {/* EDIT SINGLE GRADE MODAL */}
+      {/* EDIT STUDENT MARKS & SUBJECTS MODAL (CLICK-TO-EDIT) */}
       {editingGrade && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 text-slate-100 shadow-2xl">
-            <h2 className="text-lg font-bold text-white mb-1">
-              Update Scores: {editingGrade.studentName}
-            </h2>
-            <p className="text-xs text-slate-400 mb-4">
-              Roll #{editingGrade.rollNo} • {editingGrade.classSec} • {INITIAL_EXAM_TERMS.find((t) => t.id === editingGrade.examTermId)?.name || 'Term Exam'}
-            </p>
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 text-slate-100 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div className="flex items-start justify-between pb-4 border-b border-slate-800 mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    Classwise Marksheet Editor
+                  </span>
+                  <span className="text-xs text-slate-400">{editingGrade.classSec}</span>
+                </div>
+                <h2 className="text-xl font-bold font-serif text-white flex items-center gap-2">
+                  <span>Student: {editingGrade.studentName}</span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Roll No: <span className="font-mono text-amber-300 font-bold">{editingGrade.rollNo}</span> • Term: {INITIAL_EXAM_TERMS.find((t) => t.id === editingGrade.examTermId)?.name || 'Term Exam'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingGrade(null)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <form onSubmit={handleSaveGrade} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                {subjects.map((sub) => (
-                  <div key={sub.id}>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                      {sub.name}
-                    </label>
+              {/* Existing Subjects & Marks */}
+              <div>
+                <label className="block text-xs font-bold text-white uppercase tracking-wider mb-2.5">
+                  Subject Marks (Max 100 per subject):
+                </label>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {Object.entries(editingGrade.scores).map(([subKey, score]) => {
+                    const presetSub = subjects.find(s => s.id === subKey);
+                    const displayName = presetSub
+                      ? presetSub.name
+                      : subKey.replace('sub-custom-', '').replace(/-/g, ' ').toUpperCase();
+                    const isCustom = !presetSub;
+
+                    return (
+                      <div key={subKey} className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
+                        <div className="truncate flex-1">
+                          <span className="font-semibold text-slate-200 block truncate">{displayName}</span>
+                          <span className="text-[10px] text-slate-500 font-mono">Max: 100 • Pass: 40</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={score}
+                            onChange={(e) => handleScoreChange(subKey, parseInt(e.target.value) || 0)}
+                            className="w-16 px-2 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono font-bold text-center outline-none focus:border-amber-400"
+                          />
+
+                          {isCustom && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSubjectFromEditingGrade(subKey)}
+                              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded transition"
+                              title="Remove custom subject"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Add Custom Subject Section */}
+              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                <div className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Add Another Subject to Marksheet</span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. Sanskrit, Moral Science, Arts..."
+                    value={newSubName}
+                    onChange={(e) => setNewSubName(e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-white text-xs outline-none focus:border-indigo-500 w-full sm:w-auto"
+                  />
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     <input
                       type="number"
                       min={0}
                       max={100}
-                      value={editingGrade.scores[sub.id] || 0}
-                      onChange={(e) => handleScoreChange(sub.id, parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500 font-mono text-sm"
+                      placeholder="Score"
+                      value={newSubScore}
+                      onChange={(e) => setNewSubScore(parseInt(e.target.value) || 0)}
+                      className="w-20 px-2 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-white font-mono text-center text-xs outline-none focus:border-indigo-500"
                     />
+                    <button
+                      type="button"
+                      onClick={handleAddSubjectToEditingGrade}
+                      disabled={!newSubName.trim()}
+                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition cursor-pointer disabled:opacity-50 shrink-0"
+                    >
+                      + Add Subject
+                    </button>
                   </div>
-                ))}
+                </div>
               </div>
 
+              {/* Faculty Remarks */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Faculty Evaluation Remarks
+                  Faculty Evaluation Remarks:
                 </label>
                 <textarea
                   rows={2}
@@ -1094,18 +1235,22 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
               </div>
 
               {/* Real-time calculated preview */}
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
+              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                 <div>
-                  <span className="text-slate-400">Total: </span>
-                  <strong className="text-white">{editingGrade.totalMarks}/600</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">Total Score</span>
+                  <strong className="text-white text-sm font-mono">{editingGrade.totalMarks} / {editingGrade.maxPossible}</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400">Percentage: </span>
-                  <strong className="text-emerald-400">{editingGrade.percentage}%</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">Percentage</span>
+                  <strong className="text-emerald-400 text-sm font-mono">{editingGrade.percentage}%</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400">Grade: </span>
-                  <strong className="text-amber-400">{editingGrade.grade}</strong>
+                  <span className="text-[10px] text-slate-400 block uppercase">GPA Index</span>
+                  <strong className="text-indigo-400 text-sm font-mono">{editingGrade.gpa} / 10.0</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Grade & Status</span>
+                  <strong className="text-amber-400 text-sm font-bold uppercase">{editingGrade.grade} ({editingGrade.status})</strong>
                 </div>
               </div>
 
@@ -1119,9 +1264,10 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/30 cursor-pointer flex items-center gap-1.5"
                 >
-                  Save Marks
+                  <Save className="w-4 h-4" />
+                  <span>Save Marksheet to Firestore</span>
                 </button>
               </div>
             </form>

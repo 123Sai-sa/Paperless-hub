@@ -91,6 +91,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Daily Classroom Attendance Records
+    match /attendance/{attendanceId} {
+      allow read, write: if true;
+    }
+
     // System Config & Welcome Banner
     match /system_config/{configId} {
       allow read: if true;

@@ -87,13 +87,36 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [formErrorMsg, setFormErrorMsg] = useState<string | null>(null);
 
+  // Status toggle feedback
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
+  const [statusSuccessMsg, setStatusSuccessMsg] = useState<string | null>(null);
+
   // Register Counts
   const studentCount = users.filter((u) => u.role === 'student').length;
   const teacherCount = users.filter((u) => u.role === 'teacher').length;
   const adminCount = users.filter((u) => u.role === 'admin').length;
-  const parentCount = users.filter((u) => u.role === 'parent').length;
   const accountantCount = users.filter((u) => u.role === 'accountant').length;
   const apaarLinkedCount = users.filter((u) => u.apaarId && u.apaarId.trim().length > 0).length;
+
+  const handleToggleStatus = async (user: User) => {
+    try {
+      setStatusUpdatingId(user.id);
+      const nextStatus = user.status === 'active' ? 'suspended' : 'active';
+      await onUpdateUser(user.id, { status: nextStatus });
+      setStatusSuccessMsg(
+        `Account for ${user.fullName} is now ${nextStatus.toUpperCase()}. ${
+          nextStatus === 'suspended'
+            ? 'Account suspended: user cannot log in.'
+            : 'Account active: user can now log in.'
+        }`
+      );
+      setTimeout(() => setStatusSuccessMsg(null), 4000);
+    } catch (err: any) {
+      alert(`Failed to update status: ${err.message || 'Network error'}`);
+    } finally {
+      setStatusUpdatingId(null);
+    }
+  };
 
   const filteredUsers = users.filter((u) => {
     const matchesRole = selectedRole === 'all' || u.role === selectedRole;
@@ -375,7 +398,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
         {/* Role Pills */}
         <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
-          {(['all', 'admin', 'teacher', 'student', 'parent', 'accountant'] as const).map((r) => (
+          {(['all', 'admin', 'teacher', 'student', 'accountant'] as const).map((r) => (
             <button
               key={r}
               type="button"
@@ -391,6 +414,23 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Status Update Feedback Alert */}
+      {statusSuccessMsg && (
+        <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 flex items-center justify-between gap-3 shadow-lg animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-medium">{statusSuccessMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusSuccessMsg(null)}
+            className="text-emerald-400 hover:text-white text-xs font-bold px-1.5"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Users Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
@@ -427,8 +467,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                           ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30'
                           : user.role === 'student'
                           ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                          : user.role === 'parent'
-                          ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
                           : 'bg-purple-500/15 text-purple-400 border-purple-500/30'
                       }`}
                     >
@@ -458,21 +496,33 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() =>
-                          onUpdateUser(user.id, {
-                            status: user.status === 'active' ? 'suspended' : 'active',
-                          })
-                        }
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                        disabled={statusUpdatingId === user.id}
+                        onClick={() => handleToggleStatus(user)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${
                           user.status === 'active'
-                            ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800'
-                            : 'bg-rose-950/60 text-rose-400 border border-rose-800'
-                        }`}
+                            ? 'bg-emerald-500/15 hover:bg-rose-500/25 text-emerald-300 hover:text-rose-300 border border-emerald-500/30 hover:border-rose-500/40'
+                            : 'bg-rose-500/20 hover:bg-emerald-500/25 text-rose-300 hover:text-emerald-300 border border-rose-500/40 hover:border-emerald-500/40'
+                        } ${statusUpdatingId === user.id ? 'opacity-50 cursor-wait' : ''}`}
+                        title={user.status === 'active' ? 'Click to SUSPEND this user (block login)' : 'Click to ACTIVATE this user (allow login)'}
                       >
-                        {user.status}
+                        {statusUpdatingId === user.id ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                        ) : user.status === 'active' ? (
+                          <>
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Active</span>
+                            <span className="text-[10px] text-slate-400 font-normal ml-0.5">⇄ Suspend</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Suspended</span>
+                            <span className="text-[10px] text-slate-400 font-normal ml-0.5">⇄ Activate</span>
+                          </>
+                        )}
                       </button>
                       {user.twoFactorEnabled && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950/60 text-indigo-400 border border-indigo-800">
@@ -585,7 +635,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   >
                     <option value="student">Student</option>
                     <option value="teacher">Teacher / Faculty</option>
-                    <option value="parent">Parent</option>
                     <option value="accountant">Accountant / Bursar</option>
                     <option value="admin">Administrator</option>
                   </select>

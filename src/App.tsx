@@ -16,6 +16,7 @@ import { AiAdvisorView } from './components/AiAdvisorView';
 import { SecOpsSettingsView } from './components/SecOpsSettingsView';
 import { LecturesView } from './components/LecturesView';
 import { AssignmentsView } from './components/AssignmentsView';
+import { AttendanceView } from './components/AttendanceView';
 import { PrivateVaultView } from './components/PrivateVaultView';
 import { DatabaseConsoleModal } from './components/DatabaseConsoleModal';
 
@@ -351,6 +352,14 @@ export const App: React.FC = () => {
     handleSoundChime();
   };
 
+  // --- Handlers for Student Badges (Teachers & Admins) ---
+  const handleUpdateStudentBadges = async (studentId: string, badges: string[]) => {
+    await sdbmsApi.updateStudentBadges(studentId, badges);
+    const refreshed = await sdbmsApi.getUsers();
+    setUsers(refreshed);
+    handleSoundChime();
+  };
+
   // --- Handlers for Lectures (Teachers & Students) ---
   const handleAddLecture = async (
     lectureData: Omit<Lecture, 'id' | 'completedBy'>
@@ -511,6 +520,17 @@ export const App: React.FC = () => {
                   transactions={transactions}
                   announcements={announcements}
                   auditLogs={auditLogs}
+                  users={users}
+                  onUpdateStudentBadges={handleUpdateStudentBadges}
+                />
+              )}
+
+              {/* Attendance Book: Day-wise Register & Student Log */}
+              {activeTab === 'attendance' && (
+                <AttendanceView
+                  currentUser={currentUser}
+                  users={users}
+                  onSoundChime={handleSoundChime}
                 />
               )}
 

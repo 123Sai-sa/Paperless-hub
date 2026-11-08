@@ -18,8 +18,10 @@ import {
   Sparkles,
   ChevronRight,
   Check,
+  Paperclip,
+  Download,
 } from 'lucide-react';
-import { User, Assessment, AssessmentQuestion, AssessmentSubmission } from '../types';
+import { User, Assessment, AssessmentQuestion, AssessmentSubmission, AssessmentAttachment } from '../types';
 
 interface AssignmentsViewProps {
   currentUser: User;
@@ -79,6 +81,7 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
   const [formInstructions, setFormInstructions] = useState('');
   const [formQuestion1, setFormQuestion1] = useState('');
   const [formQuestion2, setFormQuestion2] = useState('');
+  const [formAttachmentName, setFormAttachmentName] = useState('');
 
   const subjects = ['All', 'Physics', 'Mathematics', 'Chemistry', 'Computer Science'];
 
@@ -109,6 +112,7 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
     setFormInstructions('State all derivations and mathematical formulas clearly.\nSubmit before the midnight cutoff.');
     setFormQuestion1('Problem 1: Derive the formula for kinetic energy and verify units.');
     setFormQuestion2('Problem 2: Calculate work done when a force of 25 N moves a 4 kg mass over 6 meters.');
+    setFormAttachmentName('Problem_Set_Exercise_Sheet.pdf');
     setIsCreateModalOpen(true);
   };
 
@@ -142,6 +146,18 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
       });
     }
 
+    const attachments: AssessmentAttachment[] | undefined = formAttachmentName.trim()
+      ? [
+          {
+            id: `att-${Date.now()}`,
+            name: formAttachmentName.trim(),
+            size: '1.8 MB',
+            type: 'PDF',
+            url: '#',
+          },
+        ]
+      : undefined;
+
     await onCreateAssessment({
       title: formTitle.trim(),
       subject: formSubject,
@@ -156,6 +172,7 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
       description: formDescription.trim(),
       instructions: instructionsArray.length > 0 ? instructionsArray : ['Answer all questions completely.'],
       questions: questions.length > 0 ? questions : undefined,
+      attachments,
       status: 'active',
     });
 
@@ -330,7 +347,7 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
                 </p>
 
                 {/* Due Date & Submissions Count */}
-                <div className="grid grid-cols-2 gap-2 text-[11px] mb-4 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                <div className="grid grid-cols-2 gap-2 text-[11px] mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                   <div className="flex items-center gap-1.5 text-slate-400">
                     <Calendar className="w-3.5 h-3.5 text-slate-500" />
                     <span>Due: {new Date(asm.dueDate).toLocaleDateString()}</span>
@@ -344,6 +361,26 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {/* Teacher Attachment Badge */}
+                {asm.attachments && asm.attachments.length > 0 && (
+                  <div className="mb-3 p-2 bg-emerald-950/30 border border-emerald-800/40 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 truncate">
+                      <Paperclip className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-emerald-200 truncate font-semibold text-[11px]">{asm.attachments[0].name}</span>
+                      <span className="text-[10px] text-slate-400 shrink-0">({asm.attachments[0].size || '1.8 MB'})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => alert(`Downloading verified teacher problem sheet: ${asm.attachments![0].name}`)}
+                      className="px-2 py-0.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                      title="Download attachment"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>PDF</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Student specific status chip */}
                 {isStudent && (
@@ -513,6 +550,43 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* Teacher Attachments */}
+              {activeAssessment.attachments && activeAssessment.attachments.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+                    <Paperclip className="w-3.5 h-3.5" />
+                    <span>Teacher Question Paper & Reference Attachments</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {activeAssessment.attachments.map((att) => (
+                      <div
+                        key={att.id}
+                        className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-white">{att.name}</div>
+                            <div className="text-[10px] text-slate-400">{att.size || '1.8 MB'} • {att.type || 'PDF Document'} • Verified Faculty Upload</div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => alert(`Downloading verified teacher reference handout: ${att.name}`)}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download File</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -954,6 +1028,24 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
                   placeholder="e.g. Solve the numerical problem..."
                   className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-emerald-500"
                 />
+              </div>
+
+              {/* Teacher Attachment Field */}
+              <div className="p-3.5 bg-emerald-950/20 border border-emerald-800/40 rounded-xl space-y-1.5">
+                <label className="block text-[11px] font-extrabold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Paperclip className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Teacher Assignment Attachment (PDF / Question Sheet)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formAttachmentName}
+                  onChange={(e) => setFormAttachmentName(e.target.value)}
+                  placeholder="e.g. Calculus_Term2_QuestionSet.pdf"
+                  className="w-full px-3 py-2 bg-slate-950 border border-emerald-800/50 rounded-xl text-white outline-none focus:border-emerald-500 font-mono text-[11px]"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Attach reference question sets, laboratory diagrams, or problem rubrics for students to download.
+                </p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
